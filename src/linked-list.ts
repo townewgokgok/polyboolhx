@@ -6,10 +6,16 @@
 // simple linked list implementation that allows you to traverse down nodes and save positions
 //
 
+interface INode {
+	root: boolean,
+	next: any,
+	ev?: any
+}
+
 var LinkedList = {
 	create: function(){
 		var my = {
-			root: { root: true, next: null },
+			root: <INode>{ root: true, next: null },
 			exists: function(node){
 				if (node === null || node === my.root)
 					return false;
@@ -77,5 +83,3 @@ var LinkedList = {
 		return data;
 	}
 };
-
-module.exports = LinkedList;

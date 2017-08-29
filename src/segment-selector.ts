@@ -162,5 +162,3 @@ var SegmentSelector = {
 		], buildLog);
 	}
 };
-
-module.exports = SegmentSelector;

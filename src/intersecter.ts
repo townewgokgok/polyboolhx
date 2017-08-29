@@ -6,9 +6,7 @@
 // this is the core work-horse
 //
 
-var LinkedList = require('./linked-list');
-
-function Intersecter(selfIntersection, eps, buildLog){
+function Intersecter(selfIntersection, eps, buildLog): any {
 	// selfIntersection is true/false depending on the phase of the overall algorithm
 
 	//
@@ -501,5 +499,3 @@ function Intersecter(selfIntersection, eps, buildLog){
 		}
 	};
 }
-
-module.exports = Intersecter;

@@ -248,5 +248,3 @@ function SegmentChainer(segments, eps, buildLog){
 
 	return regions;
 }
-
-module.exports = SegmentChainer;

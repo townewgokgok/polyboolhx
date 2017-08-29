@@ -4,14 +4,7 @@
  * @preserve Project Home: https://github.com/voidqk/polybooljs
  */
 
-var BuildLog = require('./lib/build-log');
-var Epsilon = require('./lib/epsilon');
-var Intersecter = require('./lib/intersecter');
-var SegmentChainer = require('./lib/segment-chainer');
-var SegmentSelector = require('./lib/segment-selector');
-var GeoJSON = require('./lib/geojson');
-
-var buildLog = false;
+var buildLog: any = false;
 var epsilon = Epsilon();
 
 var PolyBool;
@@ -119,8 +112,3 @@ function operate(poly1, poly2, selector){
 	var seg3 = selector(comb);
 	return PolyBool.polygon(seg3);
 }
-
-if (typeof window === 'object')
-	window.PolyBool = PolyBool;
-
-module.exports = PolyBool;

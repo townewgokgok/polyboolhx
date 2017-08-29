@@ -184,5 +184,3 @@ var GeoJSON = {
 		};
 	}
 };
-
-module.exports = GeoJSON;

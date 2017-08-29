@@ -8,7 +8,7 @@
 // zero is defined to be between (-epsilon, epsilon) exclusive
 //
 
-function Epsilon(eps){
+function Epsilon(eps?){
 	if (typeof eps !== 'number')
 		eps = 0.0000000001; // sane default? sure why not
 	var my = {
@@ -166,5 +166,3 @@ function Epsilon(eps){
 	};
 	return my;
 }
-
-module.exports = Epsilon;

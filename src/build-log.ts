@@ -12,7 +12,7 @@ function BuildLog(){
 	var nextSegmentId = 0;
 	var curVert = false;
 
-	function push(type, data){
+	function push(type, data?){
 		my.list.push({
 			type: type,
 			data: data ? JSON.parse(JSON.stringify(data)) : void 0
@@ -61,7 +61,7 @@ function BuildLog(){
 		},
 		log: function(data){
 			if (typeof data !== 'string')
-				data = JSON.stringify(data, false, '  ');
+				data = JSON.stringify(data, null, '  ');
 			return push('log', { txt: data });
 		},
 		reset: function(){
@@ -109,5 +109,3 @@ function BuildLog(){
 	};
 	return my;
 }
-
-module.exports = BuildLog;
