@@ -4,108 +4,146 @@
  * @preserve Project Home: https://github.com/voidqk/polybooljs
  */
 
-var buildLog: any = false;
-var epsilon = Epsilon();
+interface ISegmentCollection {
+	segments: ISegment[];
+	inverted: boolean;
+}
 
-var PolyBool;
-PolyBool = {
+interface IRegionCollection {
+	regions: Chain[];
+	inverted: boolean;
+}
+
+interface ICombined {
+	combined: ISegment[];
+	inverted1: boolean;
+	inverted2: boolean;
+}
+
+class PolyBoolStatic {
+
+	private _buildLog: BuildLog;
+	private _epsilon: Epsilon;
+
+	constructor() {
+		this._epsilon = new Epsilon();
+	}
+
 	// getter/setter for buildLog
-	buildLog: function(bl){
-		if (bl === true)
-			buildLog = BuildLog();
-		else if (bl === false)
-			buildLog = false;
-		return buildLog === false ? false : buildLog.list;
-	},
+	buildLog(bl: boolean): ILog[] {
+		if (bl)
+			this._buildLog = new BuildLog();
+		else
+			this._buildLog = null;
+		return !this._buildLog ? null : this._buildLog.list;
+	}
+
 	// getter/setter for epsilon
-	epsilon: function(v){
-		return epsilon.epsilon(v);
-	},
+	epsilon(v?: number): number {
+		return this._epsilon.epsilon(v);
+	}
 
 	// core API
-	segments: function(poly){
-		var i = Intersecter(true, epsilon, buildLog);
+	segments(poly: IRegionCollection): ISegmentCollection {
+		var i = Intersecter(true, this._epsilon, this._buildLog);
 		poly.regions.forEach(i.addRegion);
 		return {
-			segments: i.calculate(poly.inverted),
+			segments: (<SelfIntersectionCalculator>i.calculate)(poly.inverted),
 			inverted: poly.inverted
 		};
-	},
-	combine: function(segments1, segments2){
-		var i3 = Intersecter(false, epsilon, buildLog);
+	}
+
+	combine(segments1: ISegmentCollection, segments2: ISegmentCollection): ICombined {
+		var i3 = Intersecter(false, this._epsilon, this._buildLog);
 		return {
-			combined: i3.calculate(
+			combined: (<NonSelfIntersectionCalculator>i3.calculate)(
 				segments1.segments, segments1.inverted,
 				segments2.segments, segments2.inverted
 			),
 			inverted1: segments1.inverted,
 			inverted2: segments2.inverted
 		};
-	},
-	selectUnion: function(combined){
+	}
+
+	selectUnion(combined: ICombined): ISegmentCollection {
 		return {
-			segments: SegmentSelector.union(combined.combined, buildLog),
+			segments: SegmentSelector.union(combined.combined, this._buildLog),
 			inverted: combined.inverted1 || combined.inverted2
 		}
-	},
-	selectIntersect: function(combined){
+	}
+
+	selectIntersect(combined: ICombined): ISegmentCollection {
 		return {
-			segments: SegmentSelector.intersect(combined.combined, buildLog),
+			segments: SegmentSelector.intersect(combined.combined, this._buildLog),
 			inverted: combined.inverted1 && combined.inverted2
 		}
-	},
-	selectDifference: function(combined){
+	}
+
+	selectDifference(combined: ICombined): ISegmentCollection {
 		return {
-			segments: SegmentSelector.difference(combined.combined, buildLog),
+			segments: SegmentSelector.difference(combined.combined, this._buildLog),
 			inverted: combined.inverted1 && !combined.inverted2
 		}
-	},
-	selectDifferenceRev: function(combined){
+	}
+
+	selectDifferenceRev(combined: ICombined): ISegmentCollection {
 		return {
-			segments: SegmentSelector.differenceRev(combined.combined, buildLog),
+			segments: SegmentSelector.differenceRev(combined.combined, this._buildLog),
 			inverted: !combined.inverted1 && combined.inverted2
 		}
-	},
-	selectXor: function(combined){
+	}
+
+	selectXor(combined: ICombined): ISegmentCollection {
 		return {
-			segments: SegmentSelector.xor(combined.combined, buildLog),
+			segments: SegmentSelector.xor(combined.combined, this._buildLog),
 			inverted: combined.inverted1 !== combined.inverted2
 		}
-	},
-	polygon: function(segments){
+	}
+
+	polygon(segments: ISegmentCollection): IRegionCollection {
 		return {
-			regions: SegmentChainer(segments.segments, epsilon, buildLog),
+			regions: SegmentChainer(segments.segments, this._epsilon, this._buildLog),
 			inverted: segments.inverted
 		};
-	},
+	}
 
 	// GeoJSON converters
-	polygonFromGeoJSON: function(geojson){
-		return GeoJSON.toPolygon(PolyBool, geojson);
-	},
-	polygonToGeoJSON: function(poly){
-		return GeoJSON.fromPolygon(PolyBool, epsilon, poly);
-	},
+
+	polygonFromGeoJSON(geojson: IGeoJSON) {
+		return GeoJSON.toPolygon(this, geojson);
+	}
+
+	polygonToGeoJSON(poly: IRegionCollection) {
+		return GeoJSON.fromPolygon(this, this._epsilon, poly);
+	}
 
 	// helper functions for common operations
-	union: function(poly1, poly2){
-		return operate(poly1, poly2, PolyBool.selectUnion);
-	},
-	intersect: function(poly1, poly2){
-		return operate(poly1, poly2, PolyBool.selectIntersect);
-	},
-	difference: function(poly1, poly2){
-		return operate(poly1, poly2, PolyBool.selectDifference);
-	},
-	differenceRev: function(poly1, poly2){
-		return operate(poly1, poly2, PolyBool.selectDifferenceRev);
-	},
-	xor: function(poly1, poly2){
-		return operate(poly1, poly2, PolyBool.selectXor);
-	}
-};
 
-function operate(poly1, poly2, selector){
+	union(poly1: IRegionCollection, poly2: IRegionCollection): IRegionCollection {
+		return operate(poly1, poly2, this.selectUnion.bind(this));
+	}
+
+	intersect(poly1: IRegionCollection, poly2: IRegionCollection): IRegionCollection {
+		return operate(poly1, poly2, this.selectIntersect.bind(this));
+	}
+
+	difference(poly1: IRegionCollection, poly2: IRegionCollection): IRegionCollection {
+		return operate(poly1, poly2, this.selectDifference.bind(this));
+	}
+
+	differenceRev(poly1: IRegionCollection, poly2: IRegionCollection): IRegionCollection {
+		return operate(poly1, poly2, this.selectDifferenceRev.bind(this));
+	}
+
+	xor(poly1: IRegionCollection, poly2: IRegionCollection): IRegionCollection {
+		return operate(poly1, poly2, this.selectXor.bind(this));
+	}
+
+}
+
+var PolyBool = new PolyBoolStatic();
+
+function operate(poly1: IRegionCollection, poly2: IRegionCollection, selector: (combined: ICombined)=>ISegmentCollection): IRegionCollection {
 	var seg1 = PolyBool.segments(poly1);
 	var seg2 = PolyBool.segments(poly2);
 	var comb = PolyBool.combine(seg1, seg2);

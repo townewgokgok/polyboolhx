@@ -7,105 +7,139 @@
 // looking under the covers (for pretty UI's or debugging)
 //
 
-function BuildLog(){
-	var my;
-	var nextSegmentId = 0;
-	var curVert = false;
+interface ILog {
+	type: string;
+	data?: any;
+}
 
-	function push(type, data?){
-		my.list.push({
-			type: type,
-			data: data ? JSON.parse(JSON.stringify(data)) : void 0
-		});
-		return my;
+class BuildLog {
+
+	list: ILog[];
+	private nextSegmentId: number;
+	private curVert: false|number;
+
+	constructor() {
+		this.list = [];
+		this.nextSegmentId = 0;
+		this.curVert = false;
 	}
 
-	my = {
-		list: [],
-		segmentId: function(){
-			return nextSegmentId++;
-		},
-		checkIntersection: function(seg1, seg2){
-			return push('check', { seg1: seg1, seg2: seg2 });
-		},
-		segmentChop: function(seg, end){
-			push('div_seg', { seg: seg, pt: end });
-			return push('chop', { seg: seg, pt: end });
-		},
-		statusRemove: function(seg){
-			return push('pop_seg', { seg: seg });
-		},
-		segmentUpdate: function(seg){
-			return push('seg_update', { seg: seg });
-		},
-		segmentNew: function(seg, primary){
-			return push('new_seg', { seg: seg, primary: primary });
-		},
-		segmentRemove: function(seg){
-			return push('rem_seg', { seg: seg });
-		},
-		tempStatus: function(seg, above, below){
-			return push('temp_status', { seg: seg, above: above, below: below });
-		},
-		rewind: function(seg){
-			return push('rewind', { seg: seg });
-		},
-		status: function(seg, above, below){
-			return push('status', { seg: seg, above: above, below: below });
-		},
-		vert: function(x){
-			if (x === curVert)
-				return my;
-			curVert = x;
-			return push('vert', { x: x });
-		},
-		log: function(data){
-			if (typeof data !== 'string')
-				data = JSON.stringify(data, null, '  ');
-			return push('log', { txt: data });
-		},
-		reset: function(){
-			return push('reset');
-		},
-		selected: function(segs){
-			return push('selected', { segs: segs });
-		},
-		chainStart: function(seg){
-			return push('chain_start', { seg: seg });
-		},
-		chainRemoveHead: function(index, pt){
-			return push('chain_rem_head', { index: index, pt: pt });
-		},
-		chainRemoveTail: function(index, pt){
-			return push('chain_rem_tail', { index: index, pt: pt });
-		},
-		chainNew: function(pt1, pt2){
-			return push('chain_new', { pt1: pt1, pt2: pt2 });
-		},
-		chainMatch: function(index){
-			return push('chain_match', { index: index });
-		},
-		chainClose: function(index){
-			return push('chain_close', { index: index });
-		},
-		chainAddHead: function(index, pt){
-			return push('chain_add_head', { index: index, pt: pt });
-		},
-		chainAddTail: function(index, pt){
-			return push('chain_add_tail', { index: index, pt: pt, });
-		},
-		chainConnect: function(index1, index2){
-			return push('chain_con', { index1: index1, index2: index2 });
-		},
-		chainReverse: function(index){
-			return push('chain_rev', { index: index });
-		},
-		chainJoin: function(index1, index2){
-			return push('chain_join', { index1: index1, index2: index2 });
-		},
-		done: function(){
-			return push('done');
-		}
-	};
-	return my;
+	private push(type: string, data?: any): BuildLog {
+		this.list.push({
+			type: type,
+			data: data ? JSON.parse(JSON.stringify(data)) : null
+		});
+		return this;
+	}
+
+	segmentId(): number {
+		return this.nextSegmentId++;
+	}
+
+	checkIntersection(seg1: ISegment, seg2: ISegment): BuildLog {
+		return this.push('check', { seg1: seg1, seg2: seg2 });
+	}
+
+	segmentChop(seg: ISegment, end: Point): BuildLog {
+		this.push('div_seg', { seg: seg, pt: end });
+		return this.push('chop', { seg: seg, pt: end });
+	}
+
+	statusRemove(seg: ISegment): BuildLog {
+		return this.push('pop_seg', { seg: seg });
+	}
+
+	segmentUpdate(seg: ISegment): BuildLog {
+		return this.push('seg_update', { seg: seg });
+	}
+
+	segmentNew(seg: ISegment, primary: boolean): BuildLog {
+		return this.push('new_seg', { seg: seg, primary: primary });
+	}
+
+	segmentRemove(seg: ISegment): BuildLog {
+		return this.push('rem_seg', { seg: seg });
+	}
+
+	tempStatus(seg: ISegment, above: boolean, below: boolean): BuildLog {
+		return this.push('temp_status', { seg: seg, above: above, below: below });
+	}
+
+	rewind(seg: ISegment): BuildLog {
+		return this.push('rewind', { seg: seg });
+	}
+
+	status(seg: ISegment, above: boolean, below: boolean): BuildLog {
+		return this.push('status', { seg: seg, above: above, below: below });
+	}
+
+	vert(x: number): BuildLog {
+		if (x === this.curVert)
+			return this;
+		this.curVert = x;
+		return this.push('vert', { x: x });
+	}
+
+	log(data: any): BuildLog {
+		if (typeof data !== 'string')
+			data = JSON.stringify(data, null, '  ');
+		return this.push('log', { txt: data });
+	}
+
+	reset(): BuildLog {
+		return this.push('reset');
+	}
+
+	selected(segs: ISegment[]): BuildLog {
+		return this.push('selected', { segs: segs });
+	}
+
+	chainStart(seg: ISegment): BuildLog {
+		return this.push('chain_start', { seg: seg });
+	}
+
+	chainRemoveHead(index: number, pt: Point): BuildLog {
+		return this.push('chain_rem_head', { index: index, pt: pt });
+	}
+
+	chainRemoveTail(index: number, pt: Point): BuildLog {
+		return this.push('chain_rem_tail', { index: index, pt: pt });
+	}
+
+	chainNew(pt1: Point, pt2: Point): BuildLog {
+		return this.push('chain_new', { pt1: pt1, pt2: pt2 });
+	}
+
+	chainMatch(index: number): BuildLog {
+		return this.push('chain_match', { index: index });
+	}
+
+	chainClose(index: number): BuildLog {
+		return this.push('chain_close', { index: index });
+	}
+
+	chainAddHead(index: number, pt: Point): BuildLog {
+		return this.push('chain_add_head', { index: index, pt: pt });
+	}
+
+	chainAddTail(index: number, pt: Point): BuildLog {
+		return this.push('chain_add_tail', { index: index, pt: pt, });
+	}
+
+	chainConnect(index1: number, index2: number): BuildLog {
+		return this.push('chain_con', { index1: index1, index2: index2 });
+	}
+
+	chainReverse(index: number): BuildLog {
+		return this.push('chain_rev', { index: index });
+	}
+
+	chainJoin(index1: number, index2: number): BuildLog {
+		return this.push('chain_join', { index1: index1, index2: index2 });
+	}
+
+	done(): BuildLog {
+		return this.push('done');
+	}
+
 }

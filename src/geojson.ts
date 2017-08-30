@@ -6,18 +6,40 @@
 // convert between PolyBool polygon format and GeoJSON formats (Polygon and MultiPolygon)
 //
 
-var GeoJSON = {
+class GeoJSONNode {
+	region: Region;
+	children: GeoJSONNode[];
+	constructor(region?: Region) {
+		this.region = region;
+		this.children = [];
+	}
+}
+
+interface IGeoJSONPolygon {
+	type: 'Polygon';
+	coordinates: Region[];
+}
+
+interface IGeoJSONMultiPolygon {
+	type: 'MultiPolygon';
+	coordinates: Region[][];
+}
+
+type IGeoJSON = IGeoJSONPolygon|IGeoJSONMultiPolygon;
+
+class GeoJSON {
+
 	// convert a GeoJSON object to a PolyBool polygon
-	toPolygon: function(PolyBool, geojson){
+	static toPolygon(PolyBool: PolyBoolStatic, geojson: IGeoJSON) {
 
 		// converts list of LineString's to segments
-		function GeoPoly(coords){
+		function GeoPoly(coords: Region[]) {
 			// check for empty coords
 			if (coords.length <= 0)
 				return PolyBool.segments({ inverted: false, regions: [] });
 
 			// convert LineString to segments
-			function LineString(ls){
+			function LineString(ls: Region): ISegmentCollection {
 				// remove tail which should be the same as head
 				var reg = ls.slice(0, ls.length - 1);
 				return PolyBool.segments({ inverted: false, regions: [reg] });
@@ -46,15 +68,15 @@ var GeoJSON = {
 			return PolyBool.polygon(out);
 		}
 		throw new Error('PolyBool: Cannot convert GeoJSON object to PolyBool polygon');
-	},
+	}
 
 	// convert a PolyBool polygon to a GeoJSON object
-	fromPolygon: function(PolyBool, eps, poly){
+	static fromPolygon(PolyBool: PolyBoolStatic, eps: Epsilon, poly: IRegionCollection): IGeoJSON {
 		// make sure out polygon is clean
 		poly = PolyBool.polygon(PolyBool.segments(poly));
 
 		// test if r1 is inside r2
-		function regionInsideRegion(r1, r2){
+		function regionInsideRegion(r1: Region, r2: Region): boolean {
 			// we're guaranteed no lines intersect (because the polygon is clean), but a vertex
 			// could be on the edge -- so we just average pt[0] and pt[1] to produce a point on the
 			// edge of the first line, which cannot be on an edge
@@ -76,20 +98,13 @@ var GeoJSON = {
 		// | |_______| |_______| | | |___| |                |
 		// |_____________________| |_______|                +-- E
 
-		function newNode(region){
-			return {
-				region: region,
-				children: []
-			};
-		}
+		var roots: GeoJSONNode = new GeoJSONNode(null);
 
-		var roots = newNode(null);
-
-		function addChild(root, region){
+		function addChild(root: GeoJSONNode, region: Region): void {
 			// first check if we're inside any children
 			for (var i = 0; i < root.children.length; i++){
 				var child = root.children[i];
-				if (regionInsideRegion(region, child.region)){
+				if (regionInsideRegion(region, child.region)) {
 					// we are, so insert inside them instead
 					addChild(child, region);
 					return;
@@ -97,10 +112,10 @@ var GeoJSON = {
 			}
 
 			// not inside any children, so check to see if any children are inside us
-			var node = newNode(region);
+			var node = new GeoJSONNode(region);
 			for (var i = 0; i < root.children.length; i++){
 				var child = root.children[i];
-				if (regionInsideRegion(child.region, region)){
+				if (regionInsideRegion(child.region, region)) {
 					// oops... move the child beneath us, and remove them from root
 					node.children.push(child);
 					root.children.splice(i, 1);
@@ -126,7 +141,7 @@ var GeoJSON = {
 
 		// while we're at it, exteriors are counter-clockwise, and interiors are clockwise
 
-		function forceWinding(region, clockwise){
+		function forceWinding(region: Region, clockwise: boolean): Region {
 			// first, see if we're clockwise or counter-clockwise
 			// https://en.wikipedia.org/wiki/Shoelace_formula
 			var winding = 0;
@@ -150,17 +165,17 @@ var GeoJSON = {
 			return copy;
 		}
 
-		var geopolys = [];
+		var geopolys: Region[][] = [];
 
-		function addExterior(node){
-			var poly = [forceWinding(node.region, false)];
+		function addExterior(node: GeoJSONNode): void {
+			var poly: Region[] = [forceWinding(node.region, false)];
 			geopolys.push(poly);
 			// children of exteriors are interior
 			for (var i = 0; i < node.children.length; i++)
 				poly.push(getInterior(node.children[i]));
 		}
 
-		function getInterior(node){
+		function getInterior(node: GeoJSONNode): Region {
 			// children of interiors are exterior
 			for (var i = 0; i < node.children.length; i++)
 				addExterior(node.children[i]);
@@ -183,4 +198,5 @@ var GeoJSON = {
 			coordinates: geopolys
 		};
 	}
-};
+
+}

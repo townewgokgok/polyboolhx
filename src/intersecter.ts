@@ -2,18 +2,26 @@
 // MIT License
 // Project Home: https://github.com/voidqk/polybooljs
 
+type NonSelfIntersectionCalculator = (segments1: ISegment[], inverted1: boolean, segments2: ISegment[], inverted2: boolean) => ISegment[];
+type SelfIntersectionCalculator = (inverted: boolean) => ISegment[];
+
+interface IIntersecterResult {
+	addRegion?: (region: Chain)=>void;
+	calculate: NonSelfIntersectionCalculator|SelfIntersectionCalculator;
+}
+
 //
 // this is the core work-horse
 //
 
-function Intersecter(selfIntersection, eps, buildLog): any {
+function Intersecter(selfIntersection: boolean, eps: Epsilon, buildLog?: BuildLog): IIntersecterResult {
 	// selfIntersection is true/false depending on the phase of the overall algorithm
 
 	//
 	// segment creation
 	//
 
-	function segmentNew(start, end){
+	function segmentNew(start: Point, end: Point): ISegment {
 		return {
 			id: buildLog ? buildLog.segmentId() : -1,
 			start: start,
@@ -26,7 +34,7 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 		};
 	}
 
-	function segmentCopy(start, end, seg){
+	function segmentCopy(start: Point, end: Point, seg: ISegment): ISegment {
 		return {
 			id: buildLog ? buildLog.segmentId() : -1,
 			start: start,
@@ -43,9 +51,9 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 	// event logic
 	//
 
-	var event_root = LinkedList.create();
+	var event_root = new LinkedList();
 
-	function eventCompare(p1_isStart, p1_1, p1_2, p2_isStart, p2_1, p2_2){
+	function eventCompare(p1_isStart: boolean, p1_1: Point, p1_2: Point, p2_isStart: boolean, p2_1: Point, p2_2: Point): number {
 		// compare the selected points first
 		var comp = eps.pointsCompare(p1_1, p2_1);
 		if (comp !== 0)
@@ -65,8 +73,8 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 		) ? 1 : -1;
 	}
 
-	function eventAdd(ev, other_pt){
-		event_root.insertBefore(ev, function(here){
+	function eventAdd(ev: INode, other_pt: Point): void {
+		event_root.insertBefore(ev, function(here: INode) {
 			// should ev be inserted before here?
 			var comp = eventCompare(
 				ev  .isStart, ev  .pt,      other_pt,
@@ -76,7 +84,7 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 		});
 	}
 
-	function eventAddSegmentStart(seg, primary){
+	function eventAddSegmentStart(seg: ISegment, primary: boolean): INode {
 		var ev_start = LinkedList.node({
 			isStart: true,
 			pt: seg.start,
@@ -89,7 +97,7 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 		return ev_start;
 	}
 
-	function eventAddSegmentEnd(ev_start, seg, primary){
+	function eventAddSegmentEnd(ev_start: INode, seg: ISegment, primary: boolean): void {
 		var ev_end = LinkedList.node({
 			isStart: false,
 			pt: seg.end,
@@ -102,18 +110,18 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 		eventAdd(ev_end, ev_start.pt);
 	}
 
-	function eventAddSegment(seg, primary){
+	function eventAddSegment(seg: ISegment, primary: boolean): INode {
 		var ev_start = eventAddSegmentStart(seg, primary);
 		eventAddSegmentEnd(ev_start, seg, primary);
 		return ev_start;
 	}
 
-	function eventUpdateEnd(ev, end){
+	function eventUpdateEnd(ev: INode, end: Point): void {
 		// slides an end backwards
 		//   (start)------------(end)    to:
 		//   (start)---(end)
 
-		if (buildLog)
+		if (buildLog != null)
 			buildLog.segmentChop(ev.seg, end);
 
 		ev.other.remove();
@@ -122,22 +130,22 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 		eventAdd(ev.other, ev.pt);
 	}
 
-	function eventDivide(ev, pt){
+	function eventDivide(ev: INode, pt: Point): INode {
 		var ns = segmentCopy(pt, ev.seg.end, ev.seg);
 		eventUpdateEnd(ev, pt);
 		return eventAddSegment(ns, ev.primary);
 	}
 
-	function calculate(primaryPolyInverted, secondaryPolyInverted){
+	function calculate(primaryPolyInverted: boolean, secondaryPolyInverted: boolean): ISegment[] {
 		// if selfIntersection is true then there is no secondary polygon, so that isn't used
 
 		//
 		// status logic
 		//
 
-		var status_root = LinkedList.create();
+		var status_root: LinkedList = new LinkedList();
 
-		function statusCompare(ev1, ev2){
+		function statusCompare(ev1: INode, ev2: INode): number {
 			var a1 = ev1.seg.start;
 			var a2 = ev1.seg.end;
 			var b1 = ev2.seg.start;
@@ -151,14 +159,14 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 			return eps.pointAboveOrOnLine(a1, b1, b2) ? 1 : -1;
 		}
 
-		function statusFindSurrounding(ev){
-			return status_root.findTransition(function(here){
+		function statusFindSurrounding(ev: INode): IFindTransitionResult {
+			return status_root.findTransition(function(here: INode): boolean{
 				var comp = statusCompare(ev, here.ev);
 				return comp > 0;
 			});
 		}
 
-		function checkIntersection(ev1, ev2){
+		function checkIntersection(ev1: INode, ev2: INode): INode {
 			// returns the segment equal to ev1, or false if nothing equal
 
 			var seg1 = ev1.seg;
@@ -168,21 +176,21 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 			var b1 = seg2.start;
 			var b2 = seg2.end;
 
-			if (buildLog)
+			if (buildLog != null)
 				buildLog.checkIntersection(seg1, seg2);
 
 			var i = eps.linesIntersect(a1, a2, b1, b2);
 
-			if (i === false){
+			if (i == null) {
 				// segments are parallel or coincident
 
 				// if points aren't collinear, then the segments are parallel, so no intersections
 				if (!eps.pointsCollinear(a1, a2, b1))
-					return false;
+					return null;
 				// otherwise, segments are on top of each other somehow (aka coincident)
 
 				if (eps.pointsSame(a1, b2) || eps.pointsSame(a2, b1))
-					return false; // segments touch at endpoints... no intersection
+					return null; // segments touch at endpoints... no intersection
 
 				var a1_equ_b1 = eps.pointsSame(a1, b1);
 				var a2_equ_b2 = eps.pointsSame(a2, b2);
@@ -257,29 +265,29 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 						eventDivide(ev2, a2);
 				}
 			}
-			return false;
+			return null;
 		}
 
 		//
 		// main event loop
 		//
-		var segments = [];
-		while (!event_root.isEmpty()){
+		var segments: ISegment[] = [];
+		while (!event_root.isEmpty()) {
 			var ev = event_root.getHead();
 
-			if (buildLog)
+			if (buildLog != null)
 				buildLog.vert(ev.pt[0]);
 
 			if (ev.isStart){
 
-				if (buildLog)
+				if (buildLog != null)
 					buildLog.segmentNew(ev.seg, ev.primary);
 
-				var surrounding = statusFindSurrounding(ev);
+				var surrounding: IFindTransitionResult = statusFindSurrounding(ev);
 				var above = surrounding.before ? surrounding.before.ev : null;
 				var below = surrounding.after ? surrounding.after.ev : null;
 
-				if (buildLog){
+				if (buildLog != null) {
 					buildLog.tempStatus(
 						ev.seg,
 						above ? above.seg : false,
@@ -287,25 +295,25 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 					);
 				}
 
-				function checkBothIntersections(){
+				function checkBothIntersections(): INode {
 					if (above){
 						var eve = checkIntersection(ev, above);
-						if (eve)
+						if (eve != null)
 							return eve;
 					}
 					if (below)
 						return checkIntersection(ev, below);
-					return false;
+					return null;
 				}
 
 				var eve = checkBothIntersections();
-				if (eve){
+				if (eve != null) {
 					// ev and eve are equal
 					// we'll keep eve and throw away ev
 
 					// merge ev.seg's fill information into eve.seg
 
-					if (selfIntersection){
+					if (selfIntersection) {
 						var toggle; // are we a toggling edge?
 						if (ev.seg.myFill.below === null)
 							toggle = true;
@@ -326,17 +334,17 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 						eve.seg.otherFill = ev.seg.myFill;
 					}
 
-					if (buildLog)
+					if (buildLog != null)
 						buildLog.segmentUpdate(eve.seg);
 
 					ev.other.remove();
 					ev.remove();
 				}
 
-				if (event_root.getHead() !== ev){
+				if (event_root.getHead() !== ev) {
 					// something was inserted before us in the event queue, so loop back around and
 					// process it before continuing
-					if (buildLog)
+					if (buildLog != null)
 						buildLog.rewind(ev.seg);
 					continue;
 				}
@@ -344,7 +352,7 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 				//
 				// calculate fill flags
 				//
-				if (selfIntersection){
+				if (selfIntersection) {
 					var toggle; // are we a toggling edge?
 					if (ev.seg.myFill.below === null) // if we are a new segment...
 						toggle = true; // then we toggle
@@ -397,7 +405,7 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 					}
 				}
 
-				if (buildLog){
+				if (buildLog != null) {
 					buildLog.status(
 						ev.seg,
 						above ? above.seg : false,
@@ -421,7 +429,7 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 				if (status_root.exists(st.prev) && status_root.exists(st.next))
 					checkIntersection(st.prev.ev, st.next.ev);
 
-				if (buildLog)
+				if (buildLog != null)
 					buildLog.statusRemove(st.ev.seg);
 
 				// remove the status
@@ -442,17 +450,17 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 			event_root.getHead().remove();
 		}
 
-		if (buildLog)
+		if (buildLog != null)
 			buildLog.done();
 
 		return segments;
 	}
 
 	// return the appropriate API depending on what we're doing
-	if (!selfIntersection){
+	if (!selfIntersection) {
 		// performing combination of polygons, so only deal with already-processed segments
 		return {
-			calculate: function(segments1, inverted1, segments2, inverted2){
+			calculate: function(segments1: ISegment[], inverted1: boolean, segments2: ISegment[], inverted2: boolean): ISegment[] {
 				// segmentsX come from the self-intersection API, or this API
 				// invertedX is whether we treat that list of segments as an inverted polygon or not
 				// returns segments that can be used for further operations
@@ -469,7 +477,7 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 
 	// otherwise, performing self-intersection, so deal with regions
 	return {
-		addRegion: function(region){
+		addRegion: function(region: Chain): void {
 			// regions are a list of points:
 			//  [ [0, 0], [100, 0], [50, 100] ]
 			// you can add multiple regions before running calculate
@@ -492,7 +500,7 @@ function Intersecter(selfIntersection, eps, buildLog): any {
 				);
 			}
 		},
-		calculate: function(inverted){
+		calculate: function(inverted: boolean): ISegment[] {
 			// is the polygon inverted?
 			// returns segments
 			return calculate(inverted, false);
