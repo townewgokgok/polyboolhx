@@ -24,5 +24,12 @@
     "twitter": "voidqk",
     "url": "http://syntheti.cc"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "node dist/test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.26"
+  }
 }

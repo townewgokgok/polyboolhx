@@ -6,24 +6,9 @@
 // filter a list of segments based on boolean operations
 //
 
-type Point = number[];
+import {BuildLog} from './BuildLog';
 
-type Region = Point[];
-
-interface IFill {
-	above: boolean;
-	below: boolean;
-}
-
-interface ISegment {
-	id: number;
-	start: Point;
-	end: Point;
-	myFill: IFill;
-	otherFill?: IFill;
-}
-
-class SegmentSelector {
+export class SegmentSelector {
 
 	private static select(segments: ISegment[], selection:number[], buildLog?: BuildLog): ISegment[] {
 		var result: ISegment[] = [];

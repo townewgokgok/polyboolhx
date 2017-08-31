@@ -1,12 +1,16 @@
 {
     "compilerOptions": {
-        "module": "system",
+        "module": "commonjs",
         "noImplicitAny": true,
         "removeComments": false,
         "preserveConstEnums": true,
-        "outFile": "./dist/polybool.js",
-        "sourceMap": true
-    },
+        "outDir": "./dist",
+		"sourceMap": true,
+		"target": "es6",
+		"typeRoots": [
+			"node_modules/@types"
+		]
+	},
     "include": [
         "src/**/*"
     ],

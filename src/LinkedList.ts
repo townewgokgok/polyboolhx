@@ -6,29 +6,7 @@
 // simple linked list implementation that allows you to traverse down nodes and save positions
 //
 
-interface INode {
-	root?: boolean,
-	prev?: INode,
-	next?: INode,
-	ev?: any
-
-	remove?: any;
-
-	isStart?: boolean;
-	pt?: Point;
-	seg?: ISegment;
-	primary?: boolean;
-	other?: INode;
-	status?: any;
-}
-
-interface IFindTransitionResult {
-	before: INode;
-	after: INode;
-	insert: (here: INode)=>INode;
-}
-
-class LinkedList {
+export class LinkedList {
 
 	root: INode;
 

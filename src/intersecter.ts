@@ -2,19 +2,15 @@
 // MIT License
 // Project Home: https://github.com/voidqk/polybooljs
 
-type NonSelfIntersectionCalculator = (segments1: ISegment[], inverted1: boolean, segments2: ISegment[], inverted2: boolean) => ISegment[];
-type SelfIntersectionCalculator = (inverted: boolean) => ISegment[];
-
-interface IIntersecterResult {
-	addRegion?: (region: Chain)=>void;
-	calculate: NonSelfIntersectionCalculator|SelfIntersectionCalculator;
-}
-
 //
 // this is the core work-horse
 //
 
-function Intersecter(selfIntersection: boolean, eps: Epsilon, buildLog?: BuildLog): IIntersecterResult {
+import {Epsilon} from './Epsilon';
+import {BuildLog} from './BuildLog';
+import {LinkedList} from './LinkedList';
+
+export function Intersecter(selfIntersection: boolean, eps: Epsilon, buildLog?: BuildLog): IIntersecterResult {
 	// selfIntersection is true/false depending on the phase of the overall algorithm
 
 	//

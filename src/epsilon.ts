@@ -8,13 +8,7 @@
 // zero is defined to be between (-epsilon, epsilon) exclusive
 //
 
-interface ILinesIntersection {
-	pt: Point;
-	alongA: number;
-	alongB: number;
-}
-
-class Epsilon {
+export class Epsilon {
 
 	private eps: number;
 

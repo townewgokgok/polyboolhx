@@ -2,13 +2,14 @@
 // MIT License
 // Project Home: https://github.com/voidqk/polybooljs
 
-type Chain = Point[];
-
 //
 // converts a list of segments into a list of regions, while also removing unnecessary verticies
 //
 
-function SegmentChainer(segments: ISegment[], eps: Epsilon, buildLog?: BuildLog): Chain[] {
+import {Epsilon} from './Epsilon';
+import {BuildLog} from './BuildLog';
+
+export function SegmentChainer(segments: ISegment[], eps: Epsilon, buildLog?: BuildLog): Chain[] {
 	let chains: Chain[] = [];
 	let regions: Chain[] = [];
 

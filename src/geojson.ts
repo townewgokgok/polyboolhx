@@ -6,28 +6,11 @@
 // convert between PolyBool polygon format and GeoJSON formats (Polygon and MultiPolygon)
 //
 
-class GeoJSONNode {
-	region: Region;
-	children: GeoJSONNode[];
-	constructor(region?: Region) {
-		this.region = region;
-		this.children = [];
-	}
-}
+import {PolyBoolStatic} from './PolyBoolStatic';
+import {Epsilon} from './Epsilon';
+import {GeoJSONNode} from './GeoJSONNode';
 
-interface IGeoJSONPolygon {
-	type: 'Polygon';
-	coordinates: Region[];
-}
-
-interface IGeoJSONMultiPolygon {
-	type: 'MultiPolygon';
-	coordinates: Region[][];
-}
-
-type IGeoJSON = IGeoJSONPolygon|IGeoJSONMultiPolygon;
-
-class GeoJSON {
+export class GeoJSON {
 
 	// convert a GeoJSON object to a PolyBool polygon
 	static toPolygon(PolyBool: PolyBoolStatic, geojson: IGeoJSON) {

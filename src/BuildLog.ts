@@ -7,12 +7,7 @@
 // looking under the covers (for pretty UI's or debugging)
 //
 
-interface ILog {
-	type: string;
-	data?: any;
-}
-
-class BuildLog {
+export class BuildLog {
 
 	list: ILog[];
 	private nextSegmentId: number;
