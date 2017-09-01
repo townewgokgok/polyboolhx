@@ -12,17 +12,17 @@ class Epsilon {
 
 	private var eps: Float;
 
-	public function new(eps: Float = 0.0000000001) {
+	public inline function new(eps: Float = 0.0000000001) {
 		this.eps = eps;
 	}
 
-	public function epsilon(?v: Float): Float {
+	public inline function epsilon(?v: Float): Float {
 		if (Std.is(v, Float))
 			this.eps = v;
 		return this.eps;
 	}
 
-	public function pointAboveOrOnLine(pt: Point, left: Point, right: Point): Bool {
+	public inline function pointAboveOrOnLine(pt: Point, left: Point, right: Point): Bool {
 		var Ax = left[0];
 		var Ay = left[1];
 		var Bx = right[0];
@@ -55,26 +55,26 @@ class Epsilon {
 		return true;
 	}
 
-	public function pointsSameX(p1: Point, p2: Point): Bool {
+	public inline function pointsSameX(p1: Point, p2: Point): Bool {
 		return Math.abs(p1[0] - p2[0]) < this.eps;
 	}
 
-	public function pointsSameY(p1: Point, p2: Point): Bool {
+	public inline function pointsSameY(p1: Point, p2: Point): Bool {
 		return Math.abs(p1[1] - p2[1]) < this.eps;
 	}
 
-	public function pointsSame(p1: Point, p2: Point): Bool {
+	public inline function pointsSame(p1: Point, p2: Point): Bool {
 		return this.pointsSameX(p1, p2) && this.pointsSameY(p1, p2);
 	}
 
-	public function pointsCompare(p1: Point, p2: Point): Float {
+	public inline function pointsCompare(p1: Point, p2: Point): Float {
 		// returns -1 if p1 is smaller, 1 if p2 is smaller, 0 if equal
 		if (this.pointsSameX(p1, p2))
 			return this.pointsSameY(p1, p2) ? 0 : (p1[1] < p2[1] ? -1 : 1);
 		return p1[0] < p2[0] ? -1 : 1;
 	}
 
-	public function pointsCollinear(pt1: Point, pt2: Point, pt3: Point): Bool {
+	public inline function pointsCollinear(pt1: Point, pt2: Point, pt3: Point): Bool {
 		// does pt1->pt2->pt3 make a straight line?
 		// essentially this is just checking to see if the slope(pt1->pt2) === slope(pt2->pt3)
 		// if slopes are equal, then they must be collinear, because they share pt2

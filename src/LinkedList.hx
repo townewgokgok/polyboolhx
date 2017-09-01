@@ -10,21 +10,21 @@ class LinkedList {
 
 	var root: INode;
 
-	public function new() {
+	public inline function new() {
 		this.root = { root: true, next: null };
 	}
 
-	public function exists(node: INode) {
+	public inline function exists(node: INode) {
 		if (node == null || node == this.root)
 			return false;
 		return true;
 	}
 
-	public function isEmpty(): Bool {
+	public inline function isEmpty(): Bool {
 		return this.root.next == null;
 	}
 
-	public function getHead(): INode {
+	public inline function getHead(): INode {
 		return this.root.next;
 	}
 

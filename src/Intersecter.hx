@@ -16,7 +16,7 @@ class Intersecter {
 		// segment creation
 		//
 
-		function segmentNew(start: Point, end: Point): ISegment {
+		inline function segmentNew(start: Point, end: Point): ISegment {
 			return {
 				id: buildLog != null ? buildLog.segmentId() : -1,
 				start: start,
@@ -29,7 +29,7 @@ class Intersecter {
 			};
 		}
 
-		function segmentCopy(start: Point, end: Point, seg: ISegment): ISegment {
+		inline function segmentCopy(start: Point, end: Point, seg: ISegment): ISegment {
 			return {
 				id: buildLog != null ? buildLog.segmentId() : -1,
 				start: start,
@@ -79,7 +79,7 @@ class Intersecter {
 			});
 		}
 
-		function eventAddSegmentStart(seg: ISegment, primary: Bool): INode {
+		inline function eventAddSegmentStart(seg: ISegment, primary: Bool): INode {
 			var ev_start = LinkedList.node({
 				isStart: true,
 				pt: seg.start,
@@ -92,7 +92,7 @@ class Intersecter {
 			return ev_start;
 		}
 
-		function eventAddSegmentEnd(ev_start: INode, seg: ISegment, primary: Bool): Void {
+		inline function eventAddSegmentEnd(ev_start: INode, seg: ISegment, primary: Bool): Void {
 			var ev_end = LinkedList.node({
 				isStart: false,
 				pt: seg.end,
@@ -105,7 +105,7 @@ class Intersecter {
 			eventAdd(ev_end, ev_start.pt);
 		}
 
-		function eventAddSegment(seg: ISegment, primary: Bool): INode {
+		inline function eventAddSegment(seg: ISegment, primary: Bool): INode {
 			var ev_start = eventAddSegmentStart(seg, primary);
 			eventAddSegmentEnd(ev_start, seg, primary);
 			return ev_start;

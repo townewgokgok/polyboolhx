@@ -474,15 +474,15 @@ Epsilon.prototype = _hx_a(
     do return _G.math.abs(p1[1] - p2[1]) < self.eps end
   end,
   'pointsSame', function(self,p1,p2) 
-    if (self:pointsSameX(p1,p2)) then 
-      do return self:pointsSameY(p1,p2) end;
+    if (_G.math.abs(p1[0] - p2[0]) < self.eps) then 
+      do return _G.math.abs(p1[1] - p2[1]) < self.eps end;
     else
       do return false end;
     end;
   end,
   'pointsCompare', function(self,p1,p2) 
-    if (self:pointsSameX(p1,p2)) then 
-      if (self:pointsSameY(p1,p2)) then 
+    if (_G.math.abs(p1[0] - p2[0]) < self.eps) then 
+      if (_G.math.abs(p1[1] - p2[1]) < self.eps) then 
         do return 0 end;
       else
         if (p1[1] < p2[1]) then 
@@ -753,31 +753,27 @@ GeoJSONNode.prototype = _hx_a(
 Intersecter.new = {}
 Intersecter.__name__ = true
 Intersecter.intersecter = function(selfIntersection,eps,buildLog) 
-  local segmentNew = function(start,_end) 
-    do return _hx_o({__fields__={id=true,start=true,['end']=true,myFill=true,otherFill=true},id=(function() 
-      local _hx_1
-      if (buildLog ~= nil) then 
-      _hx_1 = buildLog:segmentId(); else 
-      _hx_1 = -1; end
-      return _hx_1
-    end )(),start=start,['end']=_end,myFill=_hx_o({__fields__={above=true,below=true},above=nil,below=nil}),otherFill=nil}) end;
-  end;
-  local segmentCopy = function(start1,end1,seg) 
-    do return _hx_o({__fields__={id=true,start=true,['end']=true,myFill=true,otherFill=true},id=(function() 
-      local _hx_2
-      if (buildLog ~= nil) then 
-      _hx_2 = buildLog:segmentId(); else 
-      _hx_2 = -1; end
-      return _hx_2
-    end )(),start=start1,['end']=end1,myFill=_hx_o({__fields__={above=true,below=true},above=seg.myFill.above,below=seg.myFill.below}),otherFill=nil}) end;
-  end;
   local event_root = LinkedList.new();
   local eventCompare = function(p1_isStart,p1_1,p1_2,p2_isStart,p2_1,p2_2) 
-    local comp = eps:pointsCompare(p1_1,p2_1);
+    local comp = (function() 
+      local _hx_1
+      if (_G.math.abs(p1_1[0] - p2_1[0]) < eps.eps) then 
+      _hx_1 = (function() 
+        local _hx_2
+        if (_G.math.abs(p1_1[1] - p2_1[1]) < eps.eps) then 
+        _hx_2 = 0; elseif (p1_1[1] < p2_1[1]) then 
+        _hx_2 = -1; else 
+        _hx_2 = 1; end
+        return _hx_2
+      end )(); elseif (p1_1[0] < p2_1[0]) then 
+      _hx_1 = -1; else 
+      _hx_1 = 1; end
+      return _hx_1
+    end )();
     if (comp ~= 0) then 
       do return comp end;
     end;
-    if (eps:pointsSame(p1_2,p2_2)) then 
+    if ((_G.math.abs(p1_2[0] - p2_2[0]) < eps.eps) and (_G.math.abs(p1_2[1] - p2_2[1]) < eps.eps)) then 
       do return 0 end;
     end;
     if (p1_isStart ~= p2_isStart) then 
@@ -787,19 +783,27 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
         do return -1 end;
       end;
     end;
-    if (eps:pointAboveOrOnLine(p1_2,(function() 
+    local left = (function() 
       local _hx_3
       if (p2_isStart) then 
       _hx_3 = p2_1; else 
       _hx_3 = p2_2; end
       return _hx_3
-    end )(),(function() 
+    end )();
+    local right = (function() 
       local _hx_4
       if (p2_isStart) then 
       _hx_4 = p2_2; else 
       _hx_4 = p2_1; end
       return _hx_4
-    end )())) then 
+    end )();
+    local Ax = left[0];
+    local Ay = left[1];
+    local Bx = right[0];
+    local By = right[1];
+    local Cx = p1_2[0];
+    local Cy = p1_2[1];
+    if ((((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax))) >= -eps.eps) then 
       do return 1 end;
     else
       do return -1 end;
@@ -811,34 +815,41 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
       do return comp1 < 0 end;
     end);
   end;
-  local eventAddSegmentStart = function(seg1,primary) 
-    local ev_start = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=true,pt=seg1.start,seg=seg1,primary=primary,other=nil,status=nil}));
-    eventAdd(ev_start,seg1["end"]);
-    do return ev_start end;
-  end;
-  local eventAddSegmentEnd = function(ev_start1,seg2,primary1) 
-    local ev_end = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=false,pt=seg2["end"],seg=seg2,primary=primary1,other=ev_start1,status=nil}));
-    ev_start1.other = ev_end;
-    eventAdd(ev_end,ev_start1.pt);
-  end;
-  local eventAddSegment = function(seg3,primary2) 
-    local ev_start2 = eventAddSegmentStart(seg3,primary2);
-    eventAddSegmentEnd(ev_start2,seg3,primary2);
-    do return ev_start2 end;
-  end;
-  local eventUpdateEnd = function(ev1,end2) 
+  local eventUpdateEnd = function(ev1,_end) 
     if (buildLog ~= nil) then 
-      buildLog:segmentChop(ev1.seg,end2);
+      local seg = ev1.seg;
+      buildLog:push("div_seg",_hx_o({__fields__={seg=true,pt=true},seg=seg,pt=_end}));
+      buildLog:push("chop",_hx_o({__fields__={seg=true,pt=true},seg=seg,pt=_end}));
     end;
     ev1.other:remove();
-    ev1.seg["end"] = end2;
-    ev1.other.pt = end2;
+    ev1.seg["end"] = _end;
+    ev1.other.pt = _end;
     eventAdd(ev1.other,ev1.pt);
   end;
   local eventDivide = function(ev2,pt) 
-    local ns = segmentCopy(pt,ev2.seg["end"],ev2.seg);
+    local seg1 = ev2.seg;
+    local ns;
+    if (buildLog ~= nil) then 
+      ns = (function() 
+      local _hx_obj = buildLog;
+      local _hx_fld = 'nextSegmentId';
+      local _ = _hx_obj[_hx_fld];
+      _hx_obj[_hx_fld] = _hx_obj[_hx_fld]  + 1;
+       return _;
+       end)();
+    else
+      ns = -1;
+    end;
+    local ns1 = _hx_o({__fields__={id=true,start=true,['end']=true,myFill=true,otherFill=true},id=ns,start=pt,['end']=ev2.seg["end"],myFill=_hx_o({__fields__={above=true,below=true},above=seg1.myFill.above,below=seg1.myFill.below}),otherFill=nil});
     eventUpdateEnd(ev2,pt);
-    do return eventAddSegment(ns,ev2.primary) end;
+    local primary = ev2.primary;
+    local ev_start = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=true,pt=ns1.start,seg=ns1,primary=primary,other=nil,status=nil}));
+    eventAdd(ev_start,ns1["end"]);
+    local ev_start1 = ev_start;
+    local ev_end = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=false,pt=ns1["end"],seg=ns1,primary=primary,other=ev_start1,status=nil}));
+    ev_start1.other = ev_end;
+    eventAdd(ev_end,ev_start1.pt);
+    do return ev_start1 end;
   end;
   local calculate = function(primaryPolyInverted,secondaryPolyInverted) 
     local status_root = LinkedList.new();
@@ -847,17 +858,37 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
       local a2 = ev11.seg["end"];
       local b1 = ev21.seg.start;
       local b2 = ev21.seg["end"];
-      if (eps:pointsCollinear(a1,b1,b2)) then 
-        if (eps:pointsCollinear(a2,b1,b2)) then 
+      local dx1 = a1[0] - b1[0];
+      local dy1 = a1[1] - b1[1];
+      local dx2 = b1[0] - b2[0];
+      local dy2 = b1[1] - b2[1];
+      if (_G.math.abs((dx1 * dy2) - (dx2 * dy1)) < eps.eps) then 
+        local dx11 = a2[0] - b1[0];
+        local dy11 = a2[1] - b1[1];
+        local dx21 = b1[0] - b2[0];
+        local dy21 = b1[1] - b2[1];
+        if (_G.math.abs((dx11 * dy21) - (dx21 * dy11)) < eps.eps) then 
           do return 1 end;
         end;
-        if (eps:pointAboveOrOnLine(a2,b1,b2)) then 
+        local Ax1 = b1[0];
+        local Ay1 = b1[1];
+        local Bx1 = b2[0];
+        local By1 = b2[1];
+        local Cx1 = a2[0];
+        local Cy1 = a2[1];
+        if ((((Bx1 - Ax1) * (Cy1 - Ay1)) - ((By1 - Ay1) * (Cx1 - Ax1))) >= -eps.eps) then 
           do return 1 end;
         else
           do return -1 end;
         end;
       end;
-      if (eps:pointAboveOrOnLine(a1,b1,b2)) then 
+      local Ax2 = b1[0];
+      local Ay2 = b1[1];
+      local Bx2 = b2[0];
+      local By2 = b2[1];
+      local Cx2 = a1[0];
+      local Cy2 = a1[1];
+      if ((((Bx2 - Ax2) * (Cy2 - Ay2)) - ((By2 - Ay2) * (Cx2 - Ax2))) >= -eps.eps) then 
         do return 1 end;
       else
         do return -1 end;
@@ -871,24 +902,28 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
     end;
     local checkIntersection = function(ev12,ev22) 
       local seg11 = ev12.seg;
-      local seg21 = ev22.seg;
+      local seg2 = ev22.seg;
       local a11 = seg11.start;
       local a21 = seg11["end"];
-      local b11 = seg21.start;
-      local b21 = seg21["end"];
+      local b11 = seg2.start;
+      local b21 = seg2["end"];
       if (buildLog ~= nil) then 
-        buildLog:checkIntersection(seg11,seg21);
+        buildLog:push("check",_hx_o({__fields__={seg1=true,seg2=true},seg1=seg11,seg2=seg2}));
       end;
       local i = eps:linesIntersect(a11,a21,b11,b21);
       if (i == nil) then 
-        if (not eps:pointsCollinear(a11,a21,b11)) then 
+        local dx12 = a11[0] - a21[0];
+        local dy12 = a11[1] - a21[1];
+        local dx22 = a21[0] - b11[0];
+        local dy22 = a21[1] - b11[1];
+        if (not (_G.math.abs((dx12 * dy22) - (dx22 * dy12)) < eps.eps)) then 
           do return nil end;
         end;
-        if (eps:pointsSame(a11,b21) or eps:pointsSame(a21,b11)) then 
+        if (((_G.math.abs(a11[0] - b21[0]) < eps.eps) and (_G.math.abs(a11[1] - b21[1]) < eps.eps)) or ((_G.math.abs(a21[0] - b11[0]) < eps.eps) and (_G.math.abs(a21[1] - b11[1]) < eps.eps))) then 
           do return nil end;
         end;
-        local a1_equ_b1 = eps:pointsSame(a11,b11);
-        local a2_equ_b2 = eps:pointsSame(a21,b21);
+        local a1_equ_b1 = (_G.math.abs(a11[0] - b11[0]) < eps.eps) and (_G.math.abs(a11[1] - b11[1]) < eps.eps);
+        local a2_equ_b2 = (_G.math.abs(a21[0] - b21[0]) < eps.eps) and (_G.math.abs(a21[1] - b21[1]) < eps.eps);
         if (a1_equ_b1 and a2_equ_b2) then 
           do return ev22 end;
         end;
@@ -945,15 +980,19 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
     end;
     local segments = _hx_tab_array({ }, 0);
     local _hx_break_0 = false;
-    while (not event_root:isEmpty()) do 
+    while (event_root.root.next ~= nil) do 
       repeat 
-      local ev4 = _hx_tab_array({[0]=event_root:getHead() }, 1);
+      local ev4 = _hx_tab_array({[0]=event_root.root.next }, 1);
       if (buildLog ~= nil) then 
-        buildLog:vert(ev4[0].pt[0]);
+        local x = ev4[0].pt[0];
+        if (x ~= buildLog.curVert) then 
+          buildLog.curVert = x;
+          buildLog:push("vert",_hx_o({__fields__={x=true},x=x}));
+        end;
       end;
       if (ev4[0].isStart) then 
         if (buildLog ~= nil) then 
-          buildLog:segmentNew(ev4[0].seg,ev4[0].primary);
+          buildLog:push("new_seg",_hx_o({__fields__={seg=true,primary=true},seg=ev4[0].seg,primary=ev4[0].primary}));
         end;
         local surrounding = statusFindSurrounding(ev4[0]);
         local above = _hx_tab_array({[0]=(function() 
@@ -971,7 +1010,7 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
           return _hx_6
         end )() }, 1);
         if (buildLog ~= nil) then 
-          buildLog:tempStatus(ev4[0].seg,above[0] and above[0].seg,below[0] and below[0].seg);
+          buildLog:push("temp_status",_hx_o({__fields__={seg=true,above=true,below=true},seg=ev4[0].seg,above=above[0] and above[0].seg,below=below[0] and below[0].seg}));
         end;
         local checkBothIntersections = (function(below1,above1,ev5) 
           do return function() 
@@ -1003,14 +1042,14 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
             eve1.seg.otherFill = ev4[0].seg.myFill;
           end;
           if (buildLog ~= nil) then 
-            buildLog:segmentUpdate(eve1.seg);
+            buildLog:push("seg_update",_hx_o({__fields__={seg=true},seg=eve1.seg}));
           end;
           ev4[0].other:remove();
           ev4[0]:remove();
         end;
-        if (event_root:getHead() ~= ev4[0]) then 
+        if (event_root.root.next ~= ev4[0]) then 
           if (buildLog ~= nil) then 
-            buildLog:rewind(ev4[0].seg);
+            buildLog:push("rewind",_hx_o({__fields__={seg=true},seg=ev4[0].seg}));
           end;
           break;
         end;
@@ -1051,7 +1090,7 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
           end;
         end;
         if (buildLog ~= nil) then 
-          buildLog:status(ev4[0].seg,above[0] and above[0].seg,below[0] and below[0].seg);
+          buildLog:push("status",_hx_o({__fields__={seg=true,above=true,below=true},seg=ev4[0].seg,above=above[0] and above[0].seg,below=below[0] and below[0].seg}));
         end;
         local calculate1 = LinkedList.node(_hx_o({__fields__={ev=true},ev=ev4[0]}));
         ev4[0].other.status = surrounding:insert(calculate1);
@@ -1060,11 +1099,29 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
         if (st == nil) then 
           _G.error("PolyBool: Zero-length segment detected; your epsilon is " .. "probably too small or too large",0);
         end;
-        if (status_root:exists(st.prev) and status_root:exists(st.next)) then 
+        local calculate2;
+        local node = st.prev;
+        if ((function() 
+          local _hx_7
+          if ((node == nil) or (node == status_root.root)) then 
+          _hx_7 = false; else 
+          _hx_7 = true; end
+          return _hx_7
+        end )()) then 
+          local node1 = st.next;
+          if ((node1 == nil) or (node1 == status_root.root)) then 
+            calculate2 = false;
+          else
+            calculate2 = true;
+          end;
+        else
+          calculate2 = false;
+        end;
+        if (calculate2) then 
           checkIntersection(st.prev.ev,st.next.ev);
         end;
         if (buildLog ~= nil) then 
-          buildLog:statusRemove(st.ev.seg);
+          buildLog:push("pop_seg",_hx_o({__fields__={seg=true},seg=st.ev.seg}));
         end;
         st:remove();
         if (not ev4[0].primary) then 
@@ -1074,13 +1131,13 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
         end;
         segments:push(ev4[0].seg);
       end;
-      event_root:getHead():remove();
+      event_root.root.next:remove();
       
     until true
     if _hx_break_1 then _hx_break_1 = false; break; end
     end;
     if (buildLog ~= nil) then 
-      buildLog:done();
+      buildLog:push("done");
     end;
     do return segments end;
   end;
@@ -1088,17 +1145,51 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
     do return _hx_o({__fields__={calculateNSI=true},calculateNSI=function(self,segments1,inverted1,segments2,inverted2) 
       local _g = 0;
       while (_g < segments1.length) do 
-        local seg4 = segments1[_g];
+        local seg3 = segments1[_g];
         _g = _g + 1;
-        local tmp = segmentCopy(seg4.start,seg4["end"],seg4);
-        eventAddSegment(tmp,true);
+        local seg4;
+        if (buildLog ~= nil) then 
+          seg4 = (function() 
+          local _hx_obj = buildLog;
+          local _hx_fld = 'nextSegmentId';
+          local _ = _hx_obj[_hx_fld];
+          _hx_obj[_hx_fld] = _hx_obj[_hx_fld]  + 1;
+           return _;
+           end)();
+        else
+          seg4 = -1;
+        end;
+        local seg5 = _hx_o({__fields__={id=true,start=true,['end']=true,myFill=true,otherFill=true},id=seg4,start=seg3.start,['end']=seg3["end"],myFill=_hx_o({__fields__={above=true,below=true},above=seg3.myFill.above,below=seg3.myFill.below}),otherFill=nil});
+        local ev_start2 = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=true,pt=seg5.start,seg=seg5,primary=true,other=nil,status=nil}));
+        eventAdd(ev_start2,seg5["end"]);
+        local ev_start3 = ev_start2;
+        local ev_end1 = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=false,pt=seg5["end"],seg=seg5,primary=true,other=ev_start3,status=nil}));
+        ev_start3.other = ev_end1;
+        eventAdd(ev_end1,ev_start3.pt);
         end;
       local _g1 = 0;
       while (_g1 < segments2.length) do 
-        local seg5 = segments2[_g1];
+        local seg6 = segments2[_g1];
         _g1 = _g1 + 1;
-        local tmp1 = segmentCopy(seg5.start,seg5["end"],seg5);
-        eventAddSegment(tmp1,false);
+        local seg7;
+        if (buildLog ~= nil) then 
+          seg7 = (function() 
+          local _hx_obj = buildLog;
+          local _hx_fld = 'nextSegmentId';
+          local _ = _hx_obj[_hx_fld];
+          _hx_obj[_hx_fld] = _hx_obj[_hx_fld]  + 1;
+           return _;
+           end)();
+        else
+          seg7 = -1;
+        end;
+        local seg8 = _hx_o({__fields__={id=true,start=true,['end']=true,myFill=true,otherFill=true},id=seg7,start=seg6.start,['end']=seg6["end"],myFill=_hx_o({__fields__={above=true,below=true},above=seg6.myFill.above,below=seg6.myFill.below}),otherFill=nil});
+        local ev_start4 = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=true,pt=seg8.start,seg=seg8,primary=false,other=nil,status=nil}));
+        eventAdd(ev_start4,seg8["end"]);
+        local ev_start5 = ev_start4;
+        local ev_end2 = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=false,pt=seg8["end"],seg=seg8,primary=false,other=ev_start5,status=nil}));
+        ev_start5.other = ev_end2;
+        eventAdd(ev_end2,ev_start5.pt);
         end;
       do return calculate(inverted1,inverted2) end;
     end}) end;
@@ -1115,24 +1206,55 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
       local i1 = _g11 - 1;
       pt1 = pt2;
       pt2 = region[i1];
-      local forward = eps:pointsCompare(pt1,pt2);
+      local forward = (function() 
+        local _hx_8
+        if (_G.math.abs(pt1[0] - pt2[0]) < eps.eps) then 
+        _hx_8 = (function() 
+          local _hx_9
+          if (_G.math.abs(pt1[1] - pt2[1]) < eps.eps) then 
+          _hx_9 = 0; elseif (pt1[1] < pt2[1]) then 
+          _hx_9 = -1; else 
+          _hx_9 = 1; end
+          return _hx_9
+        end )(); elseif (pt1[0] < pt2[0]) then 
+        _hx_8 = -1; else 
+        _hx_8 = 1; end
+        return _hx_8
+      end )();
       if (forward == 0) then 
         break;
       end;
-      local tmp2 = segmentNew((function() 
-        local _hx_7
+      local seg9;
+      if (buildLog ~= nil) then 
+        seg9 = (function() 
+        local _hx_obj = buildLog;
+        local _hx_fld = 'nextSegmentId';
+        local _ = _hx_obj[_hx_fld];
+        _hx_obj[_hx_fld] = _hx_obj[_hx_fld]  + 1;
+         return _;
+         end)();
+      else
+        seg9 = -1;
+      end;
+      local seg10 = _hx_o({__fields__={id=true,start=true,['end']=true,myFill=true,otherFill=true},id=seg9,start=(function() 
+        local _hx_10
         if (forward < 0) then 
-        _hx_7 = pt1; else 
-        _hx_7 = pt2; end
-        return _hx_7
-      end )(),(function() 
-        local _hx_8
+        _hx_10 = pt1; else 
+        _hx_10 = pt2; end
+        return _hx_10
+      end )(),['end']=(function() 
+        local _hx_11
         if (forward < 0) then 
-        _hx_8 = pt2; else 
-        _hx_8 = pt1; end
-        return _hx_8
-      end )());
-      eventAddSegment(tmp2,true);
+        _hx_11 = pt2; else 
+        _hx_11 = pt1; end
+        return _hx_11
+      end )(),myFill=_hx_o({__fields__={above=true,below=true},above=nil,below=nil}),otherFill=nil});
+      local ev_start6 = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=true,pt=seg10.start,seg=seg10,primary=true,other=nil,status=nil}));
+      eventAdd(ev_start6,seg10["end"]);
+      local ev_start7 = ev_start6;
+      local ev_end3 = LinkedList.node(_hx_o({__fields__={isStart=true,pt=true,seg=true,primary=true,other=true,status=true},isStart=false,pt=seg10["end"],seg=seg10,primary=true,other=ev_start7,status=nil}));
+      ev_start7.other = ev_end3;
+      eventAdd(ev_end3,ev_start7.pt);
       
     until true
     if _hx_break_1 then _hx_break_1 = false; break; end
@@ -1438,7 +1560,11 @@ PolyBool.prototype = _hx_a(
     end;
   end,
   'epsilon', function(self,v) 
-    do return self._epsilon:epsilon(v) end
+    local _this = self._epsilon;
+    if (lua.Boot.__instanceof(v,Float)) then 
+      _this.eps = v;
+    end;
+    do return _this.eps end
   end,
   'segments', function(self,poly) 
     local i = Intersecter.intersecter(true,self._epsilon,self._buildLog);
@@ -1560,12 +1686,12 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
     _g = _g + 1;
     local pt1 = seg.start;
     local pt2 = seg["end"];
-    if (eps:pointsSame(pt1,pt2)) then 
+    if ((_G.math.abs(pt1[0] - pt2[0]) < eps.eps) and (_G.math.abs(pt1[1] - pt2[1]) < eps.eps)) then 
       haxe.Log.trace("PolyBool: Warning: Zero-length segment detected; your epsilon is " .. "probably too small or too large",_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="SegmentChainer.hx",lineNumber=25,className="SegmentChainer",methodName="segmentChainer"}));
       break;
     end;
     if (buildLog ~= nil) then 
-      buildLog:chainStart(seg);
+      buildLog:push("chain_start",_hx_o({__fields__={seg=true},seg=seg}));
     end;
     local first_match = _hx_tab_array({[0]=_hx_o({__fields__={index=true,matches_head=true,matches_pt1=true},index=0,matches_head=false,matches_pt1=false}) }, 1);
     local second_match = _hx_tab_array({[0]=_hx_o({__fields__={index=true,matches_head=true,matches_pt1=true},index=0,matches_head=false,matches_pt1=false}) }, 1);
@@ -1593,22 +1719,22 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
       local head2 = chain[1];
       local tail = chain[chain.length - 1];
       local tail2 = chain[chain.length - 2];
-      if (eps:pointsSame(head,pt1)) then 
+      if ((_G.math.abs(head[0] - pt1[0]) < eps.eps) and (_G.math.abs(head[1] - pt1[1]) < eps.eps)) then 
         if (setMatch(i,true,true)) then 
           break;
         end;
       else
-        if (eps:pointsSame(head,pt2)) then 
+        if ((_G.math.abs(head[0] - pt2[0]) < eps.eps) and (_G.math.abs(head[1] - pt2[1]) < eps.eps)) then 
           if (setMatch(i,true,false)) then 
             break;
           end;
         else
-          if (eps:pointsSame(tail,pt1)) then 
+          if ((_G.math.abs(tail[0] - pt1[0]) < eps.eps) and (_G.math.abs(tail[1] - pt1[1]) < eps.eps)) then 
             if (setMatch(i,false,true)) then 
               break;
             end;
           else
-            if (eps:pointsSame(tail,pt2)) then 
+            if ((_G.math.abs(tail[0] - pt2[0]) < eps.eps) and (_G.math.abs(tail[1] - pt2[1]) < eps.eps)) then 
               if (setMatch(i,false,false)) then 
                 break;
               end;
@@ -1620,13 +1746,13 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
     if (next_match[0] == first_match[0]) then 
       chains:push(_hx_tab_array({[0]=pt1, pt2 }, 2));
       if (buildLog ~= nil) then 
-        buildLog:chainNew(pt1,pt2);
+        buildLog:push("chain_new",_hx_o({__fields__={pt1=true,pt2=true},pt1=pt1,pt2=pt2}));
       end;
       break;
     end;
     if (next_match[0] == second_match[0]) then 
       if (buildLog ~= nil) then 
-        buildLog:chainMatch(first_match[0].index);
+        buildLog:push("chain_match",_hx_o({__fields__={index=true},index=first_match[0].index}));
       end;
       local index1 = first_match[0].index;
       local pt = (function() 
@@ -1666,49 +1792,57 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
         _hx_5 = chain1[1]; end
         return _hx_5
       end )();
-      if (eps:pointsCollinear(grow2,grow,pt)) then 
+      local dx1 = grow2[0] - grow[0];
+      local dy1 = grow2[1] - grow[1];
+      local dx2 = grow[0] - pt[0];
+      local dy2 = grow[1] - pt[1];
+      if (_G.math.abs((dx1 * dy2) - (dx2 * dy1)) < eps.eps) then 
         if (addToHead) then 
           if (buildLog ~= nil) then 
-            buildLog:chainRemoveHead(first_match[0].index,pt);
+            buildLog:push("chain_rem_head",_hx_o({__fields__={index=true,pt=true},index=first_match[0].index,pt=pt}));
           end;
           chain1:shift();
         else
           if (buildLog ~= nil) then 
-            buildLog:chainRemoveTail(first_match[0].index,pt);
+            buildLog:push("chain_rem_tail",_hx_o({__fields__={index=true,pt=true},index=first_match[0].index,pt=pt}));
           end;
           chain1:pop();
         end;
         grow = grow2;
       end;
-      if (eps:pointsSame(oppo,pt)) then 
+      if ((_G.math.abs(oppo[0] - pt[0]) < eps.eps) and (_G.math.abs(oppo[1] - pt[1]) < eps.eps)) then 
         chains:splice(index1,1);
-        if (eps:pointsCollinear(oppo2,oppo,grow)) then 
+        local dx11 = oppo2[0] - oppo[0];
+        local dy11 = oppo2[1] - oppo[1];
+        local dx21 = oppo[0] - grow[0];
+        local dy21 = oppo[1] - grow[1];
+        if (_G.math.abs((dx11 * dy21) - (dx21 * dy11)) < eps.eps) then 
           if (addToHead) then 
             if (buildLog ~= nil) then 
-              buildLog:chainRemoveTail(first_match[0].index,grow);
+              buildLog:push("chain_rem_tail",_hx_o({__fields__={index=true,pt=true},index=first_match[0].index,pt=grow}));
             end;
             chain1:pop();
           else
             if (buildLog ~= nil) then 
-              buildLog:chainRemoveHead(first_match[0].index,grow);
+              buildLog:push("chain_rem_head",_hx_o({__fields__={index=true,pt=true},index=first_match[0].index,pt=grow}));
             end;
             chain1:shift();
           end;
         end;
         if (buildLog ~= nil) then 
-          buildLog:chainClose(first_match[0].index);
+          buildLog:push("chain_close",_hx_o({__fields__={index=true},index=first_match[0].index}));
         end;
         regions:push(chain1);
         break;
       end;
       if (addToHead) then 
         if (buildLog ~= nil) then 
-          buildLog:chainAddHead(first_match[0].index,pt);
+          buildLog:push("chain_add_head",_hx_o({__fields__={index=true,pt=true},index=first_match[0].index,pt=pt}));
         end;
         chain1:unshift(pt);
       else
         if (buildLog ~= nil) then 
-          buildLog:chainAddTail(first_match[0].index,pt);
+          buildLog:push("chain_add_tail",_hx_o({__fields__={index=true,pt=true},index=first_match[0].index,pt=pt}));
         end;
         chain1:push(pt);
       end;
@@ -1717,7 +1851,7 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
     local reverseChain = (function() 
       do return function(index2) 
         if (buildLog ~= nil) then 
-          buildLog:chainReverse(index2);
+          buildLog:push("chain_rev",_hx_o({__fields__={index=true},index=index2}));
         end;
         chains[index2]:reverse();
       end end;
@@ -1730,21 +1864,29 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
         local tail21 = chain11[chain11.length - 2];
         local head1 = chain2[0];
         local head21 = chain2[1];
-        if (eps:pointsCollinear(tail21,tail1,head1)) then 
+        local dx12 = tail21[0] - tail1[0];
+        local dy12 = tail21[1] - tail1[1];
+        local dx22 = tail1[0] - head1[0];
+        local dy22 = tail1[1] - head1[1];
+        if (_G.math.abs((dx12 * dy22) - (dx22 * dy12)) < eps.eps) then 
           if (buildLog ~= nil) then 
-            buildLog:chainRemoveTail(index11,tail1);
+            buildLog:push("chain_rem_tail",_hx_o({__fields__={index=true,pt=true},index=index11,pt=tail1}));
           end;
           chain11:pop();
           tail1 = tail21;
         end;
-        if (eps:pointsCollinear(tail1,head1,head21)) then 
+        local dx13 = tail1[0] - head1[0];
+        local dy13 = tail1[1] - head1[1];
+        local dx23 = head1[0] - head21[0];
+        local dy23 = head1[1] - head21[1];
+        if (_G.math.abs((dx13 * dy23) - (dx23 * dy13)) < eps.eps) then 
           if (buildLog ~= nil) then 
-            buildLog:chainRemoveHead(index21,head1);
+            buildLog:push("chain_rem_head",_hx_o({__fields__={index=true,pt=true},index=index21,pt=head1}));
           end;
           chain2:shift();
         end;
         if (buildLog ~= nil) then 
-          buildLog:chainJoin(index11,index21);
+          buildLog:push("chain_join",_hx_o({__fields__={index1=true,index2=true},index1=index11,index2=index21}));
         end;
         local appendChain1 = chain11:concat(chain2);
         chains[index11] = appendChain1;
@@ -1754,7 +1896,7 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
     local F = first_match[0].index;
     local S = second_match[0].index;
     if (buildLog ~= nil) then 
-      buildLog:chainConnect(F,S);
+      buildLog:push("chain_con",_hx_o({__fields__={index1=true,index2=true},index1=F,index2=S}));
     end;
     local reverseF = chains[F].length < chains[S].length;
     if (first_match[0].matches_head) then 
@@ -1823,17 +1965,23 @@ SegmentSelector.select = function(segments,selection,buildLog)
       return _hx_4
     end )();
     if (selection[index] ~= 0) then 
-      result:push(_hx_o({__fields__={id=true,start=true,['end']=true,myFill=true,otherFill=true},id=(function() 
-        local _hx_5
-        if (buildLog ~= nil) then 
-        _hx_5 = buildLog:segmentId(); else 
-        _hx_5 = -1; end
-        return _hx_5
-      end )(),start=seg.start,['end']=seg["end"],myFill=_hx_o({__fields__={above=true,below=true},above=selection[index] == 1,below=selection[index] == 2}),otherFill=nil}));
+      local tmp;
+      if (buildLog ~= nil) then 
+        tmp = (function() 
+        local _hx_obj = buildLog;
+        local _hx_fld = 'nextSegmentId';
+        local _ = _hx_obj[_hx_fld];
+        _hx_obj[_hx_fld] = _hx_obj[_hx_fld]  + 1;
+         return _;
+         end)();
+      else
+        tmp = -1;
+      end;
+      result:push(_hx_o({__fields__={id=true,start=true,['end']=true,myFill=true,otherFill=true},id=tmp,start=seg.start,['end']=seg["end"],myFill=_hx_o({__fields__={above=true,below=true},above=selection[index] == 1,below=selection[index] == 2}),otherFill=nil}));
     end;
     end;
   if (buildLog ~= nil) then 
-    buildLog:selected(result);
+    buildLog:push("selected",_hx_o({__fields__={segs=true},segs=result}));
   end;
   do return result end;
 end
