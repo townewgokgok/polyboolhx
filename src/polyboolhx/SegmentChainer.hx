@@ -6,6 +6,8 @@
 // converts a list of segments into a list of regions, while also removing unnecessary verticies
 //
 
+package polyboolhx;
+
 typedef IMatch = {
 	index: Int,
 	matches_head: Bool,
@@ -14,13 +16,13 @@ typedef IMatch = {
 
 class SegmentChainer {
 
-	public static function segmentChainer(segments: Array<ISegment>, eps: Epsilon, ?buildLog: BuildLog): Array<Chain> {
-		var chains: Array<Chain> = [];
-		var regions: Array<Chain> = [];
+	public static function segmentChainer(segments: Array<ISegment>, eps: Epsilon, ?buildLog: BuildLog): Array<Region> {
+		var chains: Array<Region> = [];
+		var regions: Array<Region> = [];
 
 		for (seg in segments) {
-			var pt1: Point = seg.start;
-			var pt2: Point = seg.end;
+			var pt1: IPoint = seg.start;
+			var pt2: IPoint = seg.end;
 			if (eps.pointsSame(pt1, pt2)) {
 				trace('PolyBool: Warning: Zero-length segment detected; your epsilon is ' +
 					'probably too small or too large');
@@ -55,11 +57,11 @@ class SegmentChainer {
 				return true; // we've matched twice, we're done here
 			}
 			for (i in 0...chains.length) {
-				var chain: Chain = chains[i];
-				var head : Point = chain[0];
-				var head2: Point = chain[1];
-				var tail : Point = chain[chain.length - 1];
-				var tail2: Point = chain[chain.length - 2];
+				var chain: Region = chains[i];
+				var head : IPoint = chain[0];
+				var head2: IPoint = chain[1];
+				var tail : IPoint = chain[chain.length - 1];
+				var tail2: IPoint = chain[chain.length - 2];
 				if (eps.pointsSame(head, pt1)){
 					if (setMatch(i, true, true))
 						break;
@@ -96,14 +98,14 @@ class SegmentChainer {
 				// chain into a loop
 
 				var index: Int = first_match.index;
-				var pt: Point = first_match.matches_pt1 ? pt2 : pt1; // if we matched pt1, then we add pt2, etc
+				var pt: IPoint = first_match.matches_pt1 ? pt2 : pt1; // if we matched pt1, then we add pt2, etc
 				var addToHead = first_match.matches_head; // if we matched at head, then add to the head
 
-				var chain: Chain = chains[index];
-				var grow : Point = addToHead ? chain[0] : chain[chain.length - 1];
-				var grow2: Point = addToHead ? chain[1] : chain[chain.length - 2];
-				var oppo : Point = addToHead ? chain[chain.length - 1] : chain[0];
-				var oppo2: Point = addToHead ? chain[chain.length - 2] : chain[1];
+				var chain: Region = chains[index];
+				var grow : IPoint = addToHead ? chain[0] : chain[chain.length - 1];
+				var grow2: IPoint = addToHead ? chain[1] : chain[chain.length - 2];
+				var oppo : IPoint = addToHead ? chain[chain.length - 1] : chain[0];
+				var oppo2: IPoint = addToHead ? chain[chain.length - 2] : chain[1];
 
 				if (eps.pointsCollinear(grow2, grow, pt)){
 					// grow isn't needed because it's directly between grow2 and pt:
@@ -172,12 +174,12 @@ class SegmentChainer {
 
 			function appendChain(index1: Int, index2: Int): Void {
 				// index1 gets index2 appended to it, and index2 is removed
-				var chain1: Chain = chains[index1];
-				var chain2: Chain = chains[index2];
-				var tail : Point = chain1[chain1.length - 1];
-				var tail2: Point = chain1[chain1.length - 2];
-				var head : Point = chain2[0];
-				var head2: Point = chain2[1];
+				var chain1: Region = chains[index1];
+				var chain2: Region = chains[index2];
+				var tail : IPoint = chain1[chain1.length - 1];
+				var tail2: IPoint = chain1[chain1.length - 2];
+				var head : IPoint = chain2[0];
+				var head2: IPoint = chain2[1];
 
 				if (eps.pointsCollinear(tail2, tail, head)){
 					// tail isn't needed because it's directly between tail2 and head

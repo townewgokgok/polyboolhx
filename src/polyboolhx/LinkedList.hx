@@ -6,6 +6,8 @@
 // simple linked list implementation that allows you to traverse down nodes and save positions
 //
 
+package polyboolhx;
+
 class LinkedList {
 
 	var root: INode;
@@ -47,7 +49,7 @@ class LinkedList {
 		node.next = null;
 	}
 
-	public function findTransition(check: INode->Bool): IFindTransitionResult {
+	public function findTransition(check: INode->Bool): ITransition {
 		var prev = this.root;
 		var here = this.root.next;
 		while (here != null){

@@ -1,3 +1,5 @@
+package polyboolhx;
+
 class GeoJSONNode {
 	public var region: Region;
 	public var children: Array<GeoJSONNode>;

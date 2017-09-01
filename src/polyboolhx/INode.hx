@@ -1,3 +1,5 @@
+package polyboolhx;
+
 typedef INode = {
 	?root: Bool,
 	?prev: INode,
@@ -7,7 +9,7 @@ typedef INode = {
 	?remove: Dynamic,
 
 	?isStart: Bool,
-	?pt: Point,
+	?pt: IPoint,
 	?seg: ISegment,
 	?primary: Bool,
 	?other: INode,

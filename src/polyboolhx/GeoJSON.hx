@@ -6,8 +6,7 @@
 // convert between PolyBool polygon format and GeoJSON formats (Polygon and MultiPolygon)
 //
 
-import haxe.Json;
-import haxe.io.Error;
+package polyboolhx;
 
 class GeoJSON {
 

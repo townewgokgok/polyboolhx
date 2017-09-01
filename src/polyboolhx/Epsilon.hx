@@ -8,6 +8,14 @@
 // zero is defined to be between (-epsilon, epsilon) exclusive
 //
 
+package polyboolhx;
+
+typedef IIntersection = {
+	pt: IPoint,
+	alongA: Float,
+	alongB: Float
+}
+
 class Epsilon {
 
 	private var eps: Float;
@@ -22,7 +30,7 @@ class Epsilon {
 		return this.eps;
 	}
 
-	public inline function pointAboveOrOnLine(pt: Point, left: Point, right: Point): Bool {
+	public inline function pointAboveOrOnLine(pt: IPoint, left: IPoint, right: IPoint): Bool {
 		var Ax = left.x;
 		var Ay = left.y;
 		var Bx = right.x;
@@ -32,7 +40,7 @@ class Epsilon {
 		return (Bx - Ax) * (Cy - Ay) - (By - Ay) * (Cx - Ax) >= -this.eps;
 	}
 
-	public function pointBetween(p: Point, left: Point, right: Point): Bool {
+	public function pointBetween(p: IPoint, left: IPoint, right: IPoint): Bool {
 		// p must be collinear with left->right
 		// returns false if p == left, p == right, or left == right
 		var d_py_ly = p.y - left.y;
@@ -55,26 +63,26 @@ class Epsilon {
 		return true;
 	}
 
-	public inline function pointsSameX(p1: Point, p2: Point): Bool {
+	public inline function pointsSameX(p1: IPoint, p2: IPoint): Bool {
 		return Math.abs(p1.x - p2.x) < this.eps;
 	}
 
-	public inline function pointsSameY(p1: Point, p2: Point): Bool {
+	public inline function pointsSameY(p1: IPoint, p2: IPoint): Bool {
 		return Math.abs(p1.y - p2.y) < this.eps;
 	}
 
-	public inline function pointsSame(p1: Point, p2: Point): Bool {
+	public inline function pointsSame(p1: IPoint, p2: IPoint): Bool {
 		return this.pointsSameX(p1, p2) && this.pointsSameY(p1, p2);
 	}
 
-	public inline function pointsCompare(p1: Point, p2: Point): Float {
+	public inline function pointsCompare(p1: IPoint, p2: IPoint): Float {
 		// returns -1 if p1 is smaller, 1 if p2 is smaller, 0 if equal
 		if (this.pointsSameX(p1, p2))
 			return this.pointsSameY(p1, p2) ? 0 : (p1.y < p2.y ? -1 : 1);
 		return p1.x < p2.x ? -1 : 1;
 	}
 
-	public inline function pointsCollinear(pt1: Point, pt2: Point, pt3: Point): Bool {
+	public inline function pointsCollinear(pt1: IPoint, pt2: IPoint, pt3: IPoint): Bool {
 		// does pt1->pt2->pt3 make a straight line?
 		// essentially this is just checking to see if the slope(pt1->pt2) === slope(pt2->pt3)
 		// if slopes are equal, then they must be collinear, because they share pt2
@@ -85,7 +93,7 @@ class Epsilon {
 		return Math.abs(dx1 * dy2 - dx2 * dy1) < this.eps;
 	}
 
-	public function linesIntersect(a0: Point, a1: Point, b0: Point, b1: Point): ILinesIntersection {
+	public function linesIntersect(a0: IPoint, a1: IPoint, b0: IPoint, b1: IPoint): IIntersection {
 		// returns false if the lines are coincident (e.g., parallel or on top of each other)
 		//
 		// returns an object if the lines intersect:
@@ -119,7 +127,7 @@ class Epsilon {
 		var A = (bdx * dy - bdy * dx) / axb;
 		var B = (adx * dy - ady * dx) / axb;
 
-		var ret: ILinesIntersection = {
+		var ret: IIntersection = {
 			alongA: 0,
 			alongB: 0,
 			pt: {
@@ -155,7 +163,7 @@ class Epsilon {
 		return ret;
 	}
 
-	public function pointInsideRegion(pt: Point, region: Region): Bool {
+	public function pointInsideRegion(pt: IPoint, region: Region): Bool {
 		var x = pt.x;
 		var y = pt.y;
 		var last_x = region[region.length - 1].x;

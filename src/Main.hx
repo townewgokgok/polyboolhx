@@ -1,5 +1,10 @@
 package ;
 
+import polyboolhx.IPoint;
+import polyboolhx.PolyBool;
+import polyboolhx.Region;
+import polyboolhx.IGeoJSON;
+import polyboolhx.IRegionCollection;
 import lua.Lua;
 import sys.io.File;
 import haxe.Json;
@@ -55,7 +60,7 @@ class Main {
 		function outLine(line: Region, tail: Bool) {
 			var o = '[';
 			for (i in 0...line.length) {
-				var p: Point = line[i];
+				var p: IPoint = line[i];
 				o += '[' + p.x + ',' + p.y + ']';
 				if (i < line.length - 1)
 					o += ',';

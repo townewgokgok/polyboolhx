@@ -4,6 +4,14 @@
  * @preserve Project Home: https://github.com/voidqk/polybooljs
  */
 
+package polyboolhx;
+
+typedef ICombined = {
+	combined: Array<ISegment>,
+	inverted1: Bool,
+	inverted2: Bool
+}
+
 class PolyBool {
 
 	public static var instance(get, never): PolyBool;

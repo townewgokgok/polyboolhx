@@ -1,4 +1,6 @@
+package polyboolhx;
+
 typedef IRegionCollection = {
-	regions: Array<Chain>,
+	regions: Array<Region>,
 	inverted: Bool
 }

@@ -6,6 +6,8 @@
 // filter a list of segments based on boolean operations
 //
 
+package polyboolhx;
+
 class SegmentSelector {
 
 	private static function select(segments: Array<ISegment>, selection:Array<Float>, ?buildLog: BuildLog): Array<ISegment> {

@@ -1,1 +1,0 @@
-typedef Chain = Array<Point>;

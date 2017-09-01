@@ -6,7 +6,17 @@
 // this is the core work-horse
 //
 
-import haxe.io.Error;
+package polyboolhx;
+
+typedef NonSelfIntersectionCalculator = Array<ISegment> -> Bool -> Array<ISegment> -> Bool -> Array<ISegment>;
+typedef SelfIntersectionCalculator = Bool -> Array<ISegment>;
+
+typedef IIntersecterResult = {
+	?addRegion: Region->Void,
+	?calculateNSI: NonSelfIntersectionCalculator,
+	?calculateSI: SelfIntersectionCalculator
+}
+
 class Intersecter {
 
 	public static function intersecter(selfIntersection: Bool, eps: Epsilon, ?buildLog: BuildLog): IIntersecterResult {
@@ -16,7 +26,7 @@ class Intersecter {
 		// segment creation
 		//
 
-		inline function segmentNew(start: Point, end: Point): ISegment {
+		inline function segmentNew(start: IPoint, end: IPoint): ISegment {
 			return {
 				id: buildLog != null ? buildLog.segmentId() : -1,
 				start: start,
@@ -29,7 +39,7 @@ class Intersecter {
 			};
 		}
 
-		inline function segmentCopy(start: Point, end: Point, seg: ISegment): ISegment {
+		inline function segmentCopy(start: IPoint, end: IPoint, seg: ISegment): ISegment {
 			return {
 				id: buildLog != null ? buildLog.segmentId() : -1,
 				start: start,
@@ -48,7 +58,7 @@ class Intersecter {
 
 		var event_root = new LinkedList();
 
-		function eventCompare(p1_isStart: Bool, p1_1: Point, p1_2: Point, p2_isStart: Bool, p2_1: Point, p2_2: Point): Float {
+		function eventCompare(p1_isStart: Bool, p1_1: IPoint, p1_2: IPoint, p2_isStart: Bool, p2_1: IPoint, p2_2: IPoint): Float {
 			// compare the selected points first
 			var comp = eps.pointsCompare(p1_1, p2_1);
 			if (comp != 0)
@@ -68,7 +78,7 @@ class Intersecter {
 			) ? 1 : -1;
 		}
 
-		function eventAdd(ev: INode, other_pt: Point): Void {
+		function eventAdd(ev: INode, other_pt: IPoint): Void {
 			event_root.insertBefore(ev, function(here: INode) {
 				// should ev be inserted before here?
 				var comp = eventCompare(
@@ -111,7 +121,7 @@ class Intersecter {
 			return ev_start;
 		}
 
-		function eventUpdateEnd(ev: INode, end: Point): Void {
+		function eventUpdateEnd(ev: INode, end: IPoint): Void {
 			// slides an end backwards
 			//   (start)------------(end)    to:
 			//   (start)---(end)
@@ -125,7 +135,7 @@ class Intersecter {
 			eventAdd(ev.other, ev.pt);
 		}
 
-		function eventDivide(ev: INode, pt: Point): INode {
+		function eventDivide(ev: INode, pt: IPoint): INode {
 			var ns = segmentCopy(pt, ev.seg.end, ev.seg);
 			eventUpdateEnd(ev, pt);
 			return eventAddSegment(ns, ev.primary);
@@ -154,7 +164,7 @@ class Intersecter {
 				return eps.pointAboveOrOnLine(a1, b1, b2) ? 1 : -1;
 			}
 
-			function statusFindSurrounding(ev: INode): IFindTransitionResult {
+			function statusFindSurrounding(ev: INode): ITransition {
 				return status_root.findTransition(function(here: INode): Bool{
 					var comp = statusCompare(ev, here.ev);
 					return comp > 0;
@@ -278,7 +288,7 @@ class Intersecter {
 					if (buildLog != null)
 						buildLog.segmentNew(ev.seg, ev.primary);
 
-					var surrounding: IFindTransitionResult = statusFindSurrounding(ev);
+					var surrounding: ITransition = statusFindSurrounding(ev);
 					var above = surrounding.before != null ? surrounding.before.ev : null;
 					var below = surrounding.after != null ? surrounding.after.ev : null;
 
@@ -472,7 +482,7 @@ class Intersecter {
 
 		// otherwise, performing self-intersection, so deal with regions
 		return {
-			addRegion: function(region: Chain): Void {
+			addRegion: function(region: Region): Void {
 				// regions are a list of points:
 				//  [ [0, 0], [100, 0], [50, 100] ]
 				// you can add multiple regions before running calculate

@@ -7,6 +7,8 @@
 // looking under the covers (for pretty UI's or debugging)
 //
 
+package polyboolhx;
+
 import haxe.Json;
 
 class BuildLog {
@@ -51,7 +53,7 @@ class BuildLog {
 		return this.push('check', { seg1: seg1, seg2: seg2 });
 	}
 
-	public inline function segmentChop(seg: ISegment, end: Point): BuildLog {
+	public inline function segmentChop(seg: ISegment, end: IPoint): BuildLog {
 		this.push('div_seg', { seg: seg, pt: end });
 		return this.push('chop', { seg: seg, pt: end });
 	}
@@ -109,15 +111,15 @@ class BuildLog {
 		return this.push('chain_start', { seg: seg });
 	}
 
-	public inline function chainRemoveHead(index: Float, pt: Point): BuildLog {
+	public inline function chainRemoveHead(index: Float, pt: IPoint): BuildLog {
 		return this.push('chain_rem_head', { index: index, pt: pt });
 	}
 
-	public inline function chainRemoveTail(index: Float, pt: Point): BuildLog {
+	public inline function chainRemoveTail(index: Float, pt: IPoint): BuildLog {
 		return this.push('chain_rem_tail', { index: index, pt: pt });
 	}
 
-	public inline function chainNew(pt1: Point, pt2: Point): BuildLog {
+	public inline function chainNew(pt1: IPoint, pt2: IPoint): BuildLog {
 		return this.push('chain_new', { pt1: pt1, pt2: pt2 });
 	}
 
@@ -129,11 +131,11 @@ class BuildLog {
 		return this.push('chain_close', { index: index });
 	}
 
-	public inline function chainAddHead(index: Float, pt: Point): BuildLog {
+	public inline function chainAddHead(index: Float, pt: IPoint): BuildLog {
 		return this.push('chain_add_head', { index: index, pt: pt });
 	}
 
-	public inline function chainAddTail(index: Float, pt: Point): BuildLog {
+	public inline function chainAddTail(index: Float, pt: IPoint): BuildLog {
 		return this.push('chain_add_tail', { index: index, pt: pt, });
 	}
 
