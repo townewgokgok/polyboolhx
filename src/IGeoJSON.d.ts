@@ -1,1 +1,0 @@
-type IGeoJSON = IGeoJSONPolygon|IGeoJSONMultiPolygon;

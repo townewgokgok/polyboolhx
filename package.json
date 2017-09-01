@@ -26,8 +26,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
-    "test": "node dist/test.js"
+    "build": "haxe -cp src -lua test/polybooljs.lua -main Main",
+    "test": "lua test/polybooljs.lua"
   },
   "devDependencies": {
     "@types/node": "^8.0.26"

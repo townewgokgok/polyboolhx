@@ -1,0 +1,1 @@
+typedef Region = Array<Point>;
