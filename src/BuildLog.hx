@@ -21,11 +21,25 @@ class BuildLog {
 		this.curVert = null;
 	}
 
+	private static function deepcopy(o: Dynamic): Dynamic {
+		#if lua
+			var r: Dynamic = o;
+			untyped __lua__('
+				if type(o) == "table" then
+					r = {}
+					for k, v in next, o, nil do
+						r[k] = BuildLog.deepcopy(v)
+					end
+				end
+			');
+			return r;
+		#else
+			return Json.parse(Json.stringify(v));
+		#end
+	}
+
 	private function push(type: String, ?data: Dynamic): BuildLog {
-		this.list.push({
-			type: type,
-			data: data ? Json.parse(Json.stringify(data)) : null
-		});
+		this.list.push({ type: type, data: deepcopy(data) });
 		return this;
 	}
 

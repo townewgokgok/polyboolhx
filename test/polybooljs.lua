@@ -268,15 +268,21 @@ BuildLog.super = function(self)
   self.curVert = nil;
 end
 BuildLog.__name__ = true
+BuildLog.deepcopy = function(o) 
+  local r = o;
+  
+				if type(o) == "table" then
+					r = {}
+					for k, v in next, o, nil do
+						r[k] = BuildLog.deepcopy(v)
+					end
+				end
+			;
+  do return r end;
+end
 BuildLog.prototype = _hx_a(
   'push', function(self,type,data) 
-    self.list:push(_hx_o({__fields__={type=true,data=true},type=type,data=(function() 
-      local _hx_1
-      if (data) then 
-      _hx_1 = haxe.Json.parse(haxe.Json.stringify(data)); else 
-      _hx_1 = nil; end
-      return _hx_1
-    end )()}));
+    self.list:push(_hx_o({__fields__={type=true,data=true},type=type,data=BuildLog.deepcopy(data)}));
     do return self end
   end,
   'segmentId', function(self) 
@@ -1349,7 +1355,7 @@ LinkedList.prototype = _hx_a(
 Main.new = {}
 Main.__name__ = true
 Main.recalc = function(func,polys) 
-  local BL = PolyBool.get_instance():buildLog(false);
+  local BL = PolyBool.get_instance():buildLog(true);
   local clipResult_result = func(polys[0],polys[1]);
   local clipResult_build_log = BL;
   local geojson = PolyBool.get_instance():polygonToGeoJSON(clipResult_result);
