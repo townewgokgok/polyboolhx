@@ -271,7 +271,7 @@ class Intersecter {
 				var ev = event_root.getHead();
 
 				if (buildLog != null)
-					buildLog.vert(ev.pt[0]);
+					buildLog.vert(ev.pt.x);
 
 				if (ev.isStart){
 

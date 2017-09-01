@@ -444,19 +444,19 @@ Epsilon.prototype = _hx_a(
     do return self.eps end
   end,
   'pointAboveOrOnLine', function(self,pt,left,right) 
-    local Ax = left[0];
-    local Ay = left[1];
-    local Bx = right[0];
-    local By = right[1];
-    local Cx = pt[0];
-    local Cy = pt[1];
+    local Ax = left.x;
+    local Ay = left.y;
+    local Bx = right.x;
+    local By = right.y;
+    local Cx = pt.x;
+    local Cy = pt.y;
     do return (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax))) >= -self.eps end
   end,
   'pointBetween', function(self,p,left,right) 
-    local d_py_ly = p[1] - left[1];
-    local d_rx_lx = right[0] - left[0];
-    local d_px_lx = p[0] - left[0];
-    local d_ry_ly = right[1] - left[1];
+    local d_py_ly = p.y - left.y;
+    local d_rx_lx = right.x - left.x;
+    local d_px_lx = p.x - left.x;
+    local d_ry_ly = right.y - left.y;
     local dot = (d_px_lx * d_rx_lx) + (d_py_ly * d_ry_ly);
     if (dot < self.eps) then 
       do return false end;
@@ -468,57 +468,57 @@ Epsilon.prototype = _hx_a(
     do return true end
   end,
   'pointsSameX', function(self,p1,p2) 
-    do return _G.math.abs(p1[0] - p2[0]) < self.eps end
+    do return _G.math.abs(p1.x - p2.x) < self.eps end
   end,
   'pointsSameY', function(self,p1,p2) 
-    do return _G.math.abs(p1[1] - p2[1]) < self.eps end
+    do return _G.math.abs(p1.y - p2.y) < self.eps end
   end,
   'pointsSame', function(self,p1,p2) 
-    if (_G.math.abs(p1[0] - p2[0]) < self.eps) then 
-      do return _G.math.abs(p1[1] - p2[1]) < self.eps end;
+    if (_G.math.abs(p1.x - p2.x) < self.eps) then 
+      do return _G.math.abs(p1.y - p2.y) < self.eps end;
     else
       do return false end;
     end;
   end,
   'pointsCompare', function(self,p1,p2) 
-    if (_G.math.abs(p1[0] - p2[0]) < self.eps) then 
-      if (_G.math.abs(p1[1] - p2[1]) < self.eps) then 
+    if (_G.math.abs(p1.x - p2.x) < self.eps) then 
+      if (_G.math.abs(p1.y - p2.y) < self.eps) then 
         do return 0 end;
       else
-        if (p1[1] < p2[1]) then 
+        if (p1.y < p2.y) then 
           do return -1 end;
         else
           do return 1 end;
         end;
       end;
     end;
-    if (p1[0] < p2[0]) then 
+    if (p1.x < p2.x) then 
       do return -1 end;
     else
       do return 1 end;
     end;
   end,
   'pointsCollinear', function(self,pt1,pt2,pt3) 
-    local dx1 = pt1[0] - pt2[0];
-    local dy1 = pt1[1] - pt2[1];
-    local dx2 = pt2[0] - pt3[0];
-    local dy2 = pt2[1] - pt3[1];
+    local dx1 = pt1.x - pt2.x;
+    local dy1 = pt1.y - pt2.y;
+    local dx2 = pt2.x - pt3.x;
+    local dy2 = pt2.y - pt3.y;
     do return _G.math.abs((dx1 * dy2) - (dx2 * dy1)) < self.eps end
   end,
   'linesIntersect', function(self,a0,a1,b0,b1) 
-    local adx = a1[0] - a0[0];
-    local ady = a1[1] - a0[1];
-    local bdx = b1[0] - b0[0];
-    local bdy = b1[1] - b0[1];
+    local adx = a1.x - a0.x;
+    local ady = a1.y - a0.y;
+    local bdx = b1.x - b0.x;
+    local bdy = b1.y - b0.y;
     local axb = (adx * bdy) - (ady * bdx);
     if (_G.math.abs(axb) < self.eps) then 
       do return nil end;
     end;
-    local dx = a0[0] - b0[0];
-    local dy = a0[1] - b0[1];
+    local dx = a0.x - b0.x;
+    local dy = a0.y - b0.y;
     local A = ((bdx * dy) - (bdy * dx)) / axb;
     local B = ((adx * dy) - (ady * dx)) / axb;
-    local ret = _hx_o({__fields__={alongA=true,alongB=true,pt=true},alongA=0,alongB=0,pt=_hx_tab_array({[0]=a0[0] + (A * adx), a0[1] + (A * ady) }, 2)});
+    local ret = _hx_o({__fields__={alongA=true,alongB=true,pt=true},alongA=0,alongB=0,pt=_hx_o({__fields__={x=true,y=true},x=a0.x + (A * adx),y=a0.y + (A * ady)})});
     if (A <= -self.eps) then 
       ret.alongA = -2;
     else
@@ -556,18 +556,18 @@ Epsilon.prototype = _hx_a(
     do return ret end
   end,
   'pointInsideRegion', function(self,pt,region) 
-    local x = pt[0];
-    local y = pt[1];
-    local last_x = region[region.length - 1][0];
-    local last_y = region[region.length - 1][1];
+    local x = pt.x;
+    local y = pt.y;
+    local last_x = region[region.length - 1].x;
+    local last_y = region[region.length - 1].y;
     local inside = false;
     local _g1 = 0;
     local _g = region.length;
     while (_g1 < _g) do 
       _g1 = _g1 + 1;
       local i = _g1 - 1;
-      local curr_x = region[i][0];
-      local curr_y = region[i][1];
+      local curr_x = region[i].x;
+      local curr_y = region[i].y;
       if ((((curr_y - y) > self.eps) ~= ((last_y - y) > self.eps)) and ((((((last_x - curr_x) * (y - curr_y)) / (last_y - curr_y)) + curr_x) - x) > self.eps)) then 
         inside = not inside;
       end;
@@ -625,7 +625,7 @@ end
 GeoJSON.fromPolygon = function(polyBool,eps,poly) 
   poly = polyBool:polygon(polyBool:segments(poly));
   local regionInsideRegion = function(r1,r2) 
-    do return eps:pointInsideRegion(_hx_tab_array({[0]=(r1[0][0] + r1[1][0]) * 0.5, (r1[0][1] + r1[1][1]) * 0.5 }, 2),r2) end;
+    do return eps:pointInsideRegion(_hx_o({__fields__={x=true,y=true},x=(r1[0].x + r1[1].x) * 0.5,y=(r1[0].y + r1[1].y) * 0.5}),r2) end;
   end;
   local roots = GeoJSONNode.new(nil);
   local addChild = nil;
@@ -673,17 +673,17 @@ GeoJSON.fromPolygon = function(polyBool,eps,poly)
   end;
   local forceWinding = function(region2,clockwise) 
     local winding = .0;
-    local last_x = region2[region2.length - 1][0];
-    local last_y = region2[region2.length - 1][1];
+    local last_x = region2[region2.length - 1].x;
+    local last_y = region2[region2.length - 1].y;
     local copy = _hx_tab_array({ }, 0);
     local _g12 = 0;
     local _g3 = region2.length;
     while (_g12 < _g3) do 
       _g12 = _g12 + 1;
       local i3 = _g12 - 1;
-      local curr_x = region2[i3][0];
-      local curr_y = region2[i3][1];
-      copy:push(_hx_tab_array({[0]=curr_x, curr_y }, 2));
+      local curr_x = region2[i3].x;
+      local curr_y = region2[i3].y;
+      copy:push(_hx_o({__fields__={x=true,y=true},x=curr_x,y=curr_y}));
       winding = winding + ((curr_y * last_x) - (curr_x * last_y));
       last_x = curr_x;
       last_y = curr_y;
@@ -692,7 +692,7 @@ GeoJSON.fromPolygon = function(polyBool,eps,poly)
     if (isclockwise ~= clockwise) then 
       copy:reverse();
     end;
-    copy:push(_hx_tab_array({[0]=copy[0][0], copy[0][1] }, 2));
+    copy:push(_hx_o({__fields__={x=true,y=true},x=copy[0].x,y=copy[0].y}));
     do return copy end;
   end;
   local geopolys = _hx_tab_array({ }, 0);
@@ -757,15 +757,15 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
   local eventCompare = function(p1_isStart,p1_1,p1_2,p2_isStart,p2_1,p2_2) 
     local comp = (function() 
       local _hx_1
-      if (_G.math.abs(p1_1[0] - p2_1[0]) < eps.eps) then 
+      if (_G.math.abs(p1_1.x - p2_1.x) < eps.eps) then 
       _hx_1 = (function() 
         local _hx_2
-        if (_G.math.abs(p1_1[1] - p2_1[1]) < eps.eps) then 
-        _hx_2 = 0; elseif (p1_1[1] < p2_1[1]) then 
+        if (_G.math.abs(p1_1.y - p2_1.y) < eps.eps) then 
+        _hx_2 = 0; elseif (p1_1.y < p2_1.y) then 
         _hx_2 = -1; else 
         _hx_2 = 1; end
         return _hx_2
-      end )(); elseif (p1_1[0] < p2_1[0]) then 
+      end )(); elseif (p1_1.x < p2_1.x) then 
       _hx_1 = -1; else 
       _hx_1 = 1; end
       return _hx_1
@@ -773,7 +773,7 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
     if (comp ~= 0) then 
       do return comp end;
     end;
-    if ((_G.math.abs(p1_2[0] - p2_2[0]) < eps.eps) and (_G.math.abs(p1_2[1] - p2_2[1]) < eps.eps)) then 
+    if ((_G.math.abs(p1_2.x - p2_2.x) < eps.eps) and (_G.math.abs(p1_2.y - p2_2.y) < eps.eps)) then 
       do return 0 end;
     end;
     if (p1_isStart ~= p2_isStart) then 
@@ -797,12 +797,12 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
       _hx_4 = p2_1; end
       return _hx_4
     end )();
-    local Ax = left[0];
-    local Ay = left[1];
-    local Bx = right[0];
-    local By = right[1];
-    local Cx = p1_2[0];
-    local Cy = p1_2[1];
+    local Ax = left.x;
+    local Ay = left.y;
+    local Bx = right.x;
+    local By = right.y;
+    local Cx = p1_2.x;
+    local Cy = p1_2.y;
     if ((((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax))) >= -eps.eps) then 
       do return 1 end;
     else
@@ -858,36 +858,36 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
       local a2 = ev11.seg["end"];
       local b1 = ev21.seg.start;
       local b2 = ev21.seg["end"];
-      local dx1 = a1[0] - b1[0];
-      local dy1 = a1[1] - b1[1];
-      local dx2 = b1[0] - b2[0];
-      local dy2 = b1[1] - b2[1];
+      local dx1 = a1.x - b1.x;
+      local dy1 = a1.y - b1.y;
+      local dx2 = b1.x - b2.x;
+      local dy2 = b1.y - b2.y;
       if (_G.math.abs((dx1 * dy2) - (dx2 * dy1)) < eps.eps) then 
-        local dx11 = a2[0] - b1[0];
-        local dy11 = a2[1] - b1[1];
-        local dx21 = b1[0] - b2[0];
-        local dy21 = b1[1] - b2[1];
+        local dx11 = a2.x - b1.x;
+        local dy11 = a2.y - b1.y;
+        local dx21 = b1.x - b2.x;
+        local dy21 = b1.y - b2.y;
         if (_G.math.abs((dx11 * dy21) - (dx21 * dy11)) < eps.eps) then 
           do return 1 end;
         end;
-        local Ax1 = b1[0];
-        local Ay1 = b1[1];
-        local Bx1 = b2[0];
-        local By1 = b2[1];
-        local Cx1 = a2[0];
-        local Cy1 = a2[1];
+        local Ax1 = b1.x;
+        local Ay1 = b1.y;
+        local Bx1 = b2.x;
+        local By1 = b2.y;
+        local Cx1 = a2.x;
+        local Cy1 = a2.y;
         if ((((Bx1 - Ax1) * (Cy1 - Ay1)) - ((By1 - Ay1) * (Cx1 - Ax1))) >= -eps.eps) then 
           do return 1 end;
         else
           do return -1 end;
         end;
       end;
-      local Ax2 = b1[0];
-      local Ay2 = b1[1];
-      local Bx2 = b2[0];
-      local By2 = b2[1];
-      local Cx2 = a1[0];
-      local Cy2 = a1[1];
+      local Ax2 = b1.x;
+      local Ay2 = b1.y;
+      local Bx2 = b2.x;
+      local By2 = b2.y;
+      local Cx2 = a1.x;
+      local Cy2 = a1.y;
       if ((((Bx2 - Ax2) * (Cy2 - Ay2)) - ((By2 - Ay2) * (Cx2 - Ax2))) >= -eps.eps) then 
         do return 1 end;
       else
@@ -912,18 +912,18 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
       end;
       local i = eps:linesIntersect(a11,a21,b11,b21);
       if (i == nil) then 
-        local dx12 = a11[0] - a21[0];
-        local dy12 = a11[1] - a21[1];
-        local dx22 = a21[0] - b11[0];
-        local dy22 = a21[1] - b11[1];
+        local dx12 = a11.x - a21.x;
+        local dy12 = a11.y - a21.y;
+        local dx22 = a21.x - b11.x;
+        local dy22 = a21.y - b11.y;
         if (not (_G.math.abs((dx12 * dy22) - (dx22 * dy12)) < eps.eps)) then 
           do return nil end;
         end;
-        if (((_G.math.abs(a11[0] - b21[0]) < eps.eps) and (_G.math.abs(a11[1] - b21[1]) < eps.eps)) or ((_G.math.abs(a21[0] - b11[0]) < eps.eps) and (_G.math.abs(a21[1] - b11[1]) < eps.eps))) then 
+        if (((_G.math.abs(a11.x - b21.x) < eps.eps) and (_G.math.abs(a11.y - b21.y) < eps.eps)) or ((_G.math.abs(a21.x - b11.x) < eps.eps) and (_G.math.abs(a21.y - b11.y) < eps.eps))) then 
           do return nil end;
         end;
-        local a1_equ_b1 = (_G.math.abs(a11[0] - b11[0]) < eps.eps) and (_G.math.abs(a11[1] - b11[1]) < eps.eps);
-        local a2_equ_b2 = (_G.math.abs(a21[0] - b21[0]) < eps.eps) and (_G.math.abs(a21[1] - b21[1]) < eps.eps);
+        local a1_equ_b1 = (_G.math.abs(a11.x - b11.x) < eps.eps) and (_G.math.abs(a11.y - b11.y) < eps.eps);
+        local a2_equ_b2 = (_G.math.abs(a21.x - b21.x) < eps.eps) and (_G.math.abs(a21.y - b21.y) < eps.eps);
         if (a1_equ_b1 and a2_equ_b2) then 
           do return ev22 end;
         end;
@@ -984,7 +984,7 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
       repeat 
       local ev4 = _hx_tab_array({[0]=event_root.root.next }, 1);
       if (buildLog ~= nil) then 
-        local x = ev4[0].pt[0];
+        local x = ev4[0].pt.x;
         if (x ~= buildLog.curVert) then 
           buildLog.curVert = x;
           buildLog:push("vert",_hx_o({__fields__={x=true},x=x}));
@@ -1208,15 +1208,15 @@ Intersecter.intersecter = function(selfIntersection,eps,buildLog)
       pt2 = region[i1];
       local forward = (function() 
         local _hx_8
-        if (_G.math.abs(pt1[0] - pt2[0]) < eps.eps) then 
+        if (_G.math.abs(pt1.x - pt2.x) < eps.eps) then 
         _hx_8 = (function() 
           local _hx_9
-          if (_G.math.abs(pt1[1] - pt2[1]) < eps.eps) then 
-          _hx_9 = 0; elseif (pt1[1] < pt2[1]) then 
+          if (_G.math.abs(pt1.y - pt2.y) < eps.eps) then 
+          _hx_9 = 0; elseif (pt1.y < pt2.y) then 
           _hx_9 = -1; else 
           _hx_9 = 1; end
           return _hx_9
-        end )(); elseif (pt1[0] < pt2[0]) then 
+        end )(); elseif (pt1.x < pt2.x) then 
         _hx_8 = -1; else 
         _hx_8 = 1; end
         return _hx_8
@@ -1348,45 +1348,8 @@ LinkedList.prototype = _hx_a(
 
 Main.new = {}
 Main.__name__ = true
-Main.nextDemo = function(poly1,poly2) 
-  local polyBox_min;
-  local polyBox_max;
-  polyBox_min = _hx_tab_array({[0]=nil, nil }, 2);
-  polyBox_max = _hx_tab_array({[0]=nil, nil }, 2);
-  local calcBox = function(regions) 
-    local _g1 = 0;
-    local _g = regions.length;
-    while (_g1 < _g) do 
-      _g1 = _g1 + 1;
-      local r = _g1 - 1;
-      local region = regions[r];
-      local _g3 = 0;
-      local _g2 = region.length;
-      while (_g3 < _g2) do 
-        _g3 = _g3 + 1;
-        local p = _g3 - 1;
-        local pt = region[p];
-        if ((polyBox_min[0] == nil) or (pt[0] < polyBox_min[0])) then 
-          polyBox_min[0] = pt[0];
-        end;
-        if ((polyBox_min[1] == nil) or (pt[1] < polyBox_min[1])) then 
-          polyBox_min[1] = pt[1];
-        end;
-        if ((polyBox_max[0] == nil) or (pt[0] > polyBox_max[0])) then 
-          polyBox_max[0] = pt[0];
-        end;
-        if ((polyBox_max[1] == nil) or (pt[1] > polyBox_max[1])) then 
-          polyBox_max[1] = pt[1];
-        end;
-        end;
-      end;
-  end;
-  calcBox(poly1.regions);
-  calcBox(poly2.regions);
-  do return _hx_tab_array({[0]=poly1, poly2 }, 2) end;
-end
 Main.recalc = function(func,polys) 
-  local BL = PolyBool.get_instance():buildLog(true);
+  local BL = PolyBool.get_instance():buildLog(false);
   local clipResult_result = func(polys[0],polys[1]);
   local clipResult_build_log = BL;
   local geojson = PolyBool.get_instance():polygonToGeoJSON(clipResult_result);
@@ -1401,7 +1364,7 @@ Main.recalc = function(func,polys)
       while (_g3 < _g2) do 
         _g3 = _g3 + 1;
         local j = _g3 - 1;
-        p[i][j] = _hx_tab_array({[0]=p[i][j][0] * 0.1, p[i][j][1] * 0.1 }, 2);
+        p[i][j] = _hx_o({__fields__={x=true,y=true},x=p[i][j].x * 0.1,y=p[i][j].y * 0.1});
         end;
       end;
   end;
@@ -1414,7 +1377,7 @@ Main.recalc = function(func,polys)
       _g11 = _g11 + 1;
       local i1 = _g11 - 1;
       local p1 = line[i1];
-      o = o .. ("[" .. p1[0] .. "," .. p1[1] .. "]");
+      o = o .. ("[" .. p1.x .. "," .. p1.y .. "]");
       if (i1 < (line.length - 1)) then 
         o = o .. ",";
       end;
@@ -1497,12 +1460,12 @@ Main.main = function()
   while (_g1 < expectedCases.length) do 
     local expectedCase = expectedCases[_g1];
     _g1 = _g1 + 1;
-    local polys = Main.nextDemo(expectedCase.poly1,expectedCase.poly2);
     local _g2 = 0;
     local _g3 = expectedCase.tests;
     while (_g2 < _g3.length) do 
       local expectedTest = _g3[_g2];
       _g2 = _g2 + 1;
+      local polys = _hx_tab_array({[0]=expectedCase.poly1, expectedCase.poly2 }, 2);
       polys[0].inverted = expectedTest.poly1Inverted;
       polys[1].inverted = expectedTest.poly2Inverted;
       local key = expectedTest.operation;
@@ -1514,15 +1477,15 @@ Main.main = function()
         oks = oks + 1;
       else
         ngs = ngs + 1;
-        haxe.Log.trace("NG: " .. expectedTest.operation,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=144,className="Main",methodName="main"}));
-        haxe.Log.trace("actual  : " .. actualJson,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=145,className="Main",methodName="main"}));
-        haxe.Log.trace("expected: " .. expectedJson,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=146,className="Main",methodName="main"}));
+        haxe.Log.trace("NG: " .. expectedTest.operation,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=121,className="Main",methodName="main"}));
+        haxe.Log.trace("actual  : " .. actualJson,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=122,className="Main",methodName="main"}));
+        haxe.Log.trace("expected: " .. expectedJson,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=123,className="Main",methodName="main"}));
       end;
       end;
     end;
-  haxe.Log.trace("===========================",_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=150,className="Main",methodName="main"}));
-  haxe.Log.trace("OK: " .. oks,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=151,className="Main",methodName="main"}));
-  haxe.Log.trace("NG: " .. ngs,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=152,className="Main",methodName="main"}));
+  haxe.Log.trace("===========================",_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=127,className="Main",methodName="main"}));
+  haxe.Log.trace("OK: " .. oks,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=128,className="Main",methodName="main"}));
+  haxe.Log.trace("NG: " .. ngs,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=129,className="Main",methodName="main"}));
 end
 
 Math.new = {}
@@ -1686,7 +1649,7 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
     _g = _g + 1;
     local pt1 = seg.start;
     local pt2 = seg["end"];
-    if ((_G.math.abs(pt1[0] - pt2[0]) < eps.eps) and (_G.math.abs(pt1[1] - pt2[1]) < eps.eps)) then 
+    if ((_G.math.abs(pt1.x - pt2.x) < eps.eps) and (_G.math.abs(pt1.y - pt2.y) < eps.eps)) then 
       haxe.Log.trace("PolyBool: Warning: Zero-length segment detected; your epsilon is " .. "probably too small or too large",_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="SegmentChainer.hx",lineNumber=25,className="SegmentChainer",methodName="segmentChainer"}));
       break;
     end;
@@ -1719,22 +1682,22 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
       local head2 = chain[1];
       local tail = chain[chain.length - 1];
       local tail2 = chain[chain.length - 2];
-      if ((_G.math.abs(head[0] - pt1[0]) < eps.eps) and (_G.math.abs(head[1] - pt1[1]) < eps.eps)) then 
+      if ((_G.math.abs(head.x - pt1.x) < eps.eps) and (_G.math.abs(head.y - pt1.y) < eps.eps)) then 
         if (setMatch(i,true,true)) then 
           break;
         end;
       else
-        if ((_G.math.abs(head[0] - pt2[0]) < eps.eps) and (_G.math.abs(head[1] - pt2[1]) < eps.eps)) then 
+        if ((_G.math.abs(head.x - pt2.x) < eps.eps) and (_G.math.abs(head.y - pt2.y) < eps.eps)) then 
           if (setMatch(i,true,false)) then 
             break;
           end;
         else
-          if ((_G.math.abs(tail[0] - pt1[0]) < eps.eps) and (_G.math.abs(tail[1] - pt1[1]) < eps.eps)) then 
+          if ((_G.math.abs(tail.x - pt1.x) < eps.eps) and (_G.math.abs(tail.y - pt1.y) < eps.eps)) then 
             if (setMatch(i,false,true)) then 
               break;
             end;
           else
-            if ((_G.math.abs(tail[0] - pt2[0]) < eps.eps) and (_G.math.abs(tail[1] - pt2[1]) < eps.eps)) then 
+            if ((_G.math.abs(tail.x - pt2.x) < eps.eps) and (_G.math.abs(tail.y - pt2.y) < eps.eps)) then 
               if (setMatch(i,false,false)) then 
                 break;
               end;
@@ -1792,10 +1755,10 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
         _hx_5 = chain1[1]; end
         return _hx_5
       end )();
-      local dx1 = grow2[0] - grow[0];
-      local dy1 = grow2[1] - grow[1];
-      local dx2 = grow[0] - pt[0];
-      local dy2 = grow[1] - pt[1];
+      local dx1 = grow2.x - grow.x;
+      local dy1 = grow2.y - grow.y;
+      local dx2 = grow.x - pt.x;
+      local dy2 = grow.y - pt.y;
       if (_G.math.abs((dx1 * dy2) - (dx2 * dy1)) < eps.eps) then 
         if (addToHead) then 
           if (buildLog ~= nil) then 
@@ -1810,12 +1773,12 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
         end;
         grow = grow2;
       end;
-      if ((_G.math.abs(oppo[0] - pt[0]) < eps.eps) and (_G.math.abs(oppo[1] - pt[1]) < eps.eps)) then 
+      if ((_G.math.abs(oppo.x - pt.x) < eps.eps) and (_G.math.abs(oppo.y - pt.y) < eps.eps)) then 
         chains:splice(index1,1);
-        local dx11 = oppo2[0] - oppo[0];
-        local dy11 = oppo2[1] - oppo[1];
-        local dx21 = oppo[0] - grow[0];
-        local dy21 = oppo[1] - grow[1];
+        local dx11 = oppo2.x - oppo.x;
+        local dy11 = oppo2.y - oppo.y;
+        local dx21 = oppo.x - grow.x;
+        local dy21 = oppo.y - grow.y;
         if (_G.math.abs((dx11 * dy21) - (dx21 * dy11)) < eps.eps) then 
           if (addToHead) then 
             if (buildLog ~= nil) then 
@@ -1864,10 +1827,10 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
         local tail21 = chain11[chain11.length - 2];
         local head1 = chain2[0];
         local head21 = chain2[1];
-        local dx12 = tail21[0] - tail1[0];
-        local dy12 = tail21[1] - tail1[1];
-        local dx22 = tail1[0] - head1[0];
-        local dy22 = tail1[1] - head1[1];
+        local dx12 = tail21.x - tail1.x;
+        local dy12 = tail21.y - tail1.y;
+        local dx22 = tail1.x - head1.x;
+        local dy22 = tail1.y - head1.y;
         if (_G.math.abs((dx12 * dy22) - (dx22 * dy12)) < eps.eps) then 
           if (buildLog ~= nil) then 
             buildLog:push("chain_rem_tail",_hx_o({__fields__={index=true,pt=true},index=index11,pt=tail1}));
@@ -1875,10 +1838,10 @@ SegmentChainer.segmentChainer = function(segments,eps,buildLog)
           chain11:pop();
           tail1 = tail21;
         end;
-        local dx13 = tail1[0] - head1[0];
-        local dy13 = tail1[1] - head1[1];
-        local dx23 = head1[0] - head21[0];
-        local dy23 = head1[1] - head21[1];
+        local dx13 = tail1.x - head1.x;
+        local dy13 = tail1.y - head1.y;
+        local dx23 = head1.x - head21.x;
+        local dy23 = head1.y - head21.y;
         if (_G.math.abs((dx13 * dy23) - (dx23 * dy13)) < eps.eps) then 
           if (buildLog ~= nil) then 
             buildLog:push("chain_rem_head",_hx_o({__fields__={index=true,pt=true},index=index21,pt=head1}));

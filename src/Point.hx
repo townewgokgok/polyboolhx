@@ -1,1 +1,4 @@
-typedef Point = Array<Float>;
+typedef Point = {
+	x: Float,
+	y: Float
+}

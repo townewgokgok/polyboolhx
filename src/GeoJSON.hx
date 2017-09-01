@@ -62,10 +62,10 @@ class GeoJSON {
 			// we're guaranteed no lines intersect (because the polygon is clean), but a vertex
 			// could be on the edge -- so we just average pt[0] and pt[1] to produce a point on the
 			// edge of the first line, which cannot be on an edge
-			return eps.pointInsideRegion([
-				(r1[0][0] + r1[1][0]) * 0.5,
-				(r1[0][1] + r1[1][1]) * 0.5
-			], r2);
+			return eps.pointInsideRegion({
+				x: (r1[0].x + r1[1].x) * 0.5,
+				y: (r1[0].y + r1[1].y) * 0.5
+			}, r2);
 		}
 
 		// calculate inside heirarchy
@@ -129,13 +129,13 @@ class GeoJSON {
 			// first, see if we're clockwise or counter-clockwise
 			// https://en.wikipedia.org/wiki/Shoelace_formula
 			var winding = .0;
-			var last_x = region[region.length - 1][0];
-			var last_y = region[region.length - 1][1];
+			var last_x = region[region.length - 1].x;
+			var last_y = region[region.length - 1].y;
 			var copy = [];
 			for (i in 0...region.length) {
-				var curr_x = region[i][0];
-				var curr_y = region[i][1];
-				copy.push([curr_x, curr_y]); // create a copy while we're at it
+				var curr_x = region[i].x;
+				var curr_y = region[i].y;
+				copy.push({x:curr_x, y:curr_y}); // create a copy while we're at it
 				winding += curr_y * last_x - curr_x * last_y;
 				last_x = curr_x;
 				last_y = curr_y;
@@ -145,7 +145,7 @@ class GeoJSON {
 			if (isclockwise != clockwise)
 				copy.reverse();
 			// while we're here, the last point must be the first point...
-			copy.push([copy[0][0], copy[0][1]]);
+			copy.push({x:copy[0].x, y:copy[0].y});
 			return copy;
 		}
 

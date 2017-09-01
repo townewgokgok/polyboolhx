@@ -30,29 +30,6 @@ typedef ITestCaseResult = {
 
 class Main {
 
-	static function nextDemo(poly1: IRegionCollection, poly2: IRegionCollection): Array<IRegionCollection> {
-		var polyBox: IPolyBox = { min: [null, null], max: [null, null] };
-		function calcBox(regions: Array<Region>) {
-			for (r in 0...regions.length) {
-				var region = regions[r];
-				for (p in 0...region.length) {
-					var pt = region[p];
-					if (polyBox.min[0] == null || pt[0] < polyBox.min[0])
-						polyBox.min[0] = pt[0];
-					if (polyBox.min[1] == null || pt[1] < polyBox.min[1])
-						polyBox.min[1] = pt[1];
-					if (polyBox.max[0] == null || pt[0] > polyBox.max[0])
-						polyBox.max[0] = pt[0];
-					if (polyBox.max[1] == null || pt[1] > polyBox.max[1])
-						polyBox.max[1] = pt[1];
-				}
-			}
-		}
-		calcBox(poly1.regions);
-		calcBox(poly2.regions);
-		return [poly1, poly2];
-	}
-
 	static function recalc(func: OperatorFunc, polys: Array<IRegionCollection>): IGeoJSON {
 		var BL = PolyBool.instance.buildLog(true);
 		var clipResult = {
@@ -69,7 +46,7 @@ class Main {
 			// (and out of pure luck this tends to place our polygons over Ethiopia...!)
 			for (i in 0...p.length) {
 				for (j in 0...p[i].length)
-					p[i][j] = [p[i][j][0] * 0.1, p[i][j][1] * 0.1];
+					p[i][j] = {x:p[i][j].x * 0.1, y:p[i][j].y * 0.1};
 			}
 		}
 		// I suppose we could just Json.stringify(geojson, null, '  '), but that doesn't look so
@@ -79,7 +56,7 @@ class Main {
 			var o = '[';
 			for (i in 0...line.length) {
 				var p: Point = line[i];
-				o += '[' + p[0] + ',' + p[1] + ']';
+				o += '[' + p.x + ',' + p.y + ']';
 				if (i < line.length - 1)
 					o += ',';
 			}
@@ -129,8 +106,8 @@ class Main {
 		var oks = 0;
 		var ngs = 0;
 		for (expectedCase in expectedCases) {
-			var polys = nextDemo(expectedCase.poly1, expectedCase.poly2);
 			for (expectedTest in expectedCase.tests) {
+				var polys = [expectedCase.poly1, expectedCase.poly2];
 				polys[0].inverted = expectedTest.poly1Inverted;
 				polys[1].inverted = expectedTest.poly2Inverted;
 				var actual = recalc(funcs[expectedTest.operation], polys);

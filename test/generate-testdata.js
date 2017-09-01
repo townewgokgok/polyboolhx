@@ -1,4 +1,15 @@
-let PolyBool = require('./polybool-org');
+var PolyBool = require('./polybool-org');
+
+function convert(poly) {
+	for (var region of poly.regions) {
+		for (var i=0; i<region.length; i++) {
+			region[i] = {
+				x: region[i][0],
+				y: region[i][1]
+			};
+		}
+	}
+}
 
 var polyCases = [{
 	name: 'Assorted Polygons',
@@ -208,33 +219,6 @@ var polyCases = [{
 	}
 }];
 
-function nextDemo(demoIndex) {
-	var demo = polyCases[demoIndex];
-	var caseName = (demoIndex + 1) + '. ' + demo.name;
-	var poly1 = demo.poly1;
-	var poly2 = demo.poly2;
-	var polyBox = { min: [false, false], max: [false, false] };
-	function calcBox(regions) {
-		for (var r = 0; r < regions.length; r++){
-			var region = regions[r];
-			for (var p = 0; p < region.length; p++){
-				var pt = region[p];
-				if (polyBox.min[0] === false || pt[0] < polyBox.min[0])
-					polyBox.min[0] = pt[0];
-				if (polyBox.min[1] === false || pt[1] < polyBox.min[1])
-					polyBox.min[1] = pt[1];
-				if (polyBox.max[0] === false || pt[0] > polyBox.max[0])
-					polyBox.max[0] = pt[0];
-				if (polyBox.max[1] === false || pt[1] > polyBox.max[1])
-					polyBox.max[1] = pt[1];
-			}
-		}
-	}
-	calcBox(poly1.regions);
-	calcBox(poly2.regions);
-	return [poly1, poly2];
-}
-
 function recalc(func, polys) {
 	var BL = PolyBool.buildLog(true);
 	var clipResult = {
@@ -298,8 +282,9 @@ function init() {
 		xor: PolyBool.xor.bind(PolyBool)
 	};
 	var testdata = [];
-	for (var demo = 0; demo < polyCases.length; demo++) {
-		let polys = nextDemo(demo);
+	for (var demoIndex = 0; demoIndex < polyCases.length; demoIndex++) {
+		var demo = polyCases[demoIndex];
+		let polys = [demo.poly1, demo.poly2];
 		let caseResult = {
 			poly1: JSON.parse(JSON.stringify(polys[0])),
 			poly2: JSON.parse(JSON.stringify(polys[1])),
@@ -317,6 +302,8 @@ function init() {
 				});
 			}
 		}
+		convert(caseResult.poly1);
+		convert(caseResult.poly2);
 		testdata.push(caseResult);
 	}
 	console.log(JSON.stringify(testdata));

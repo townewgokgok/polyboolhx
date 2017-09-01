@@ -23,22 +23,22 @@ class Epsilon {
 	}
 
 	public inline function pointAboveOrOnLine(pt: Point, left: Point, right: Point): Bool {
-		var Ax = left[0];
-		var Ay = left[1];
-		var Bx = right[0];
-		var By = right[1];
-		var Cx = pt[0];
-		var Cy = pt[1];
+		var Ax = left.x;
+		var Ay = left.y;
+		var Bx = right.x;
+		var By = right.y;
+		var Cx = pt.x;
+		var Cy = pt.y;
 		return (Bx - Ax) * (Cy - Ay) - (By - Ay) * (Cx - Ax) >= -this.eps;
 	}
 
 	public function pointBetween(p: Point, left: Point, right: Point): Bool {
 		// p must be collinear with left->right
 		// returns false if p == left, p == right, or left == right
-		var d_py_ly = p[1] - left[1];
-		var d_rx_lx = right[0] - left[0];
-		var d_px_lx = p[0] - left[0];
-		var d_ry_ly = right[1] - left[1];
+		var d_py_ly = p.y - left.y;
+		var d_rx_lx = right.x - left.x;
+		var d_px_lx = p.x - left.x;
+		var d_ry_ly = right.y - left.y;
 
 		var dot = d_px_lx * d_rx_lx + d_py_ly * d_ry_ly;
 		// if `dot` is 0, then `p` == `left` or `left` == `right` (reject)
@@ -56,11 +56,11 @@ class Epsilon {
 	}
 
 	public inline function pointsSameX(p1: Point, p2: Point): Bool {
-		return Math.abs(p1[0] - p2[0]) < this.eps;
+		return Math.abs(p1.x - p2.x) < this.eps;
 	}
 
 	public inline function pointsSameY(p1: Point, p2: Point): Bool {
-		return Math.abs(p1[1] - p2[1]) < this.eps;
+		return Math.abs(p1.y - p2.y) < this.eps;
 	}
 
 	public inline function pointsSame(p1: Point, p2: Point): Bool {
@@ -70,18 +70,18 @@ class Epsilon {
 	public inline function pointsCompare(p1: Point, p2: Point): Float {
 		// returns -1 if p1 is smaller, 1 if p2 is smaller, 0 if equal
 		if (this.pointsSameX(p1, p2))
-			return this.pointsSameY(p1, p2) ? 0 : (p1[1] < p2[1] ? -1 : 1);
-		return p1[0] < p2[0] ? -1 : 1;
+			return this.pointsSameY(p1, p2) ? 0 : (p1.y < p2.y ? -1 : 1);
+		return p1.x < p2.x ? -1 : 1;
 	}
 
 	public inline function pointsCollinear(pt1: Point, pt2: Point, pt3: Point): Bool {
 		// does pt1->pt2->pt3 make a straight line?
 		// essentially this is just checking to see if the slope(pt1->pt2) === slope(pt2->pt3)
 		// if slopes are equal, then they must be collinear, because they share pt2
-		var dx1 = pt1[0] - pt2[0];
-		var dy1 = pt1[1] - pt2[1];
-		var dx2 = pt2[0] - pt3[0];
-		var dy2 = pt2[1] - pt3[1];
+		var dx1 = pt1.x - pt2.x;
+		var dy1 = pt1.y - pt2.y;
+		var dx2 = pt2.x - pt3.x;
+		var dy2 = pt2.y - pt3.y;
 		return Math.abs(dx1 * dy2 - dx2 * dy1) < this.eps;
 	}
 
@@ -104,17 +104,17 @@ class Epsilon {
 		//     0   intersection point is between segment's first and second points (exclusive)
 		//     1   intersection point is directly on segment's second point
 		//     2   intersection point is after segment's second point
-		var adx = a1[0] - a0[0];
-		var ady = a1[1] - a0[1];
-		var bdx = b1[0] - b0[0];
-		var bdy = b1[1] - b0[1];
+		var adx = a1.x - a0.x;
+		var ady = a1.y - a0.y;
+		var bdx = b1.x - b0.x;
+		var bdy = b1.y - b0.y;
 
 		var axb = adx * bdy - ady * bdx;
 		if (Math.abs(axb) < this.eps)
 			return null; // lines are coincident
 
-		var dx = a0[0] - b0[0];
-		var dy = a0[1] - b0[1];
+		var dx = a0.x - b0.x;
+		var dy = a0.y - b0.y;
 
 		var A = (bdx * dy - bdy * dx) / axb;
 		var B = (adx * dy - ady * dx) / axb;
@@ -122,10 +122,10 @@ class Epsilon {
 		var ret: ILinesIntersection = {
 			alongA: 0,
 			alongB: 0,
-			pt: [
-				a0[0] + A * adx,
-				a0[1] + A * ady
-			]
+			pt: {
+				x: a0.x + A * adx,
+				y: a0.y + A * ady
+			}
 		};
 
 		// categorize where intersection point is along A and B
@@ -156,14 +156,14 @@ class Epsilon {
 	}
 
 	public function pointInsideRegion(pt: Point, region: Region): Bool {
-		var x = pt[0];
-		var y = pt[1];
-		var last_x = region[region.length - 1][0];
-		var last_y = region[region.length - 1][1];
+		var x = pt.x;
+		var y = pt.y;
+		var last_x = region[region.length - 1].x;
+		var last_y = region[region.length - 1].y;
 		var inside = false;
 		for (i in 0...region.length) {
-			var curr_x = region[i][0];
-			var curr_y = region[i][1];
+			var curr_x = region[i].x;
+			var curr_y = region[i].y;
 
 			// if y is between curr_y and last_y, and
 			// x is to the right of the boundary created by the line
